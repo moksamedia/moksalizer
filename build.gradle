@@ -60,6 +60,15 @@ dependencies {
 	
 	/* MORPHIA (https://github.com/jmkgreen/morphia) */
 	compile 'com.github.jmkgreen.morphia:morphia:1.2.2'
+	
+	/* GOOGLE DRIVE API */
+	compile 'com.google.api-client:google-api-client:1.14.1-beta'
+	
+	/* HTTP BUILDER */
+	compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.5.2'
+	
+	/* HTML PARSER */
+	compile 'org.htmlparser:htmlparser:1.6'
 }
 
 war {
