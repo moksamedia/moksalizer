@@ -1,3 +1,17 @@
+/*
+ * NOTES
+ * 
+ * ORM: 
+ *    - Kundera: JPA compliant, easily switch between NoSQL and relational databases, uses SQL-like query langauge (ugh)
+ *    - Morphia: mongodb-specific, not actively developed
+ *    - Spring Data: heavy, provides decent separation
+ *    
+ * SECURITY:
+ *    - Spring: role-based, XML
+ *    - Apache Shiro: INI files
+ * 
+ */
+
 apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'jetty'
@@ -22,10 +36,7 @@ dependencies {
 		
 	/* JUNIT */
 	testCompile 'junit:junit:4.10'
-	
-	/* SPOCK */
-	testCompile 'org.spockframework:spock-core:0.7-groovy-1.8'
-	
+		
 	/* LOGGING */
 	compile 'org.slf4j:slf4j-api:1.7.4',
 			'ch.qos.logback:logback-classic:1.0.1'  // Logback
@@ -43,4 +54,14 @@ dependencies {
 	
 	/* JERSEY */
 	compile 'com.sun.jersey:jersey-bundle:1.17'
+	
+	/* MONGO JAVA DRIVER */
+	compile 'org.mongodb:mongo-java-driver:2.10.1'
+	
+	/* MORPHIA (https://github.com/jmkgreen/morphia) */
+	compile 'com.github.jmkgreen.morphia:morphia:1.2.2'
+}
+
+war {
+	webXml = file('web.xml')
 }

@@ -1,8 +1,12 @@
+import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import ch.qos.logback.core.ConsoleAppender
 
-appender('iamconsole', ConsoleAppender) {
+
+appender('console', ConsoleAppender) {
     encoder(PatternLayoutEncoder) {
-        pattern = '%-5p %c %x - %m%n'
+        pattern = '%level %logger - %msg%n'
     }
 }
+
+root(Level.INFO, ["console"])
