@@ -1,0 +1,9 @@
+<div class="post-list">
+	<% posts.each { post -> %>
+		<div class="post-wrapper">
+			<h3 class="post-title"><a href="${blogHomeURL}/post?seq=${post.sequenceNumber}">${post.title}</a></h3>
+			<div class="post-content data-id="${post._id}" data-seqnumber="${post.sequenceNumber}">${post.html}</div>
+			<div class="post-divider"> &bull; &bull; &bull; </div>
+		</div>
+	<% } %>
+</div>

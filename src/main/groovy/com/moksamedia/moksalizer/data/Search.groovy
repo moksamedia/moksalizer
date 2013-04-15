@@ -2,6 +2,13 @@ package com.moksamedia.moksalizer.data
 
 import com.github.jmkgreen.morphia.query.Query
 
+
+/*
+ * Search class is used as a wrapper around the Morphia Query class to allow the fluent
+ * query DSL to be terminated with .getOne(), .getAll(), or .remove() method calls. So
+ * instead of Post.getAll(Post.search().filter().etc...), we can do this
+ * Post.search().filter().getAll()
+ */
 class Search {
 
 	Class clazz
@@ -12,8 +19,12 @@ class Search {
 		this.query = query
 	}
 	
-	public void batch(int batchNumber, int batchSize) {
+	public Query batch(int batchNumber, int batchSize) {
 		query.limit(batchSize).offset(batchNumber * batchSize)
+	}
+	
+	public Query sort(String val) {
+		query.order(val)
 	}
 	
 	def methodMissing(String name, args) {

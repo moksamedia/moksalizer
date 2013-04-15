@@ -1,7 +1,5 @@
 
 
-import java.security.MessageDigest
-
 import org.slf4j.LoggerFactory
 
 import com.moksamedia.moksalizer.data.objects.BlogData
@@ -9,6 +7,8 @@ import com.moksamedia.moksalizer.data.objects.Post
 import com.moksamedia.moksalizer.data.objects.Seq
 import com.moksamedia.moksalizer.data.objects.Tag
 import com.moksamedia.moksalizer.data.objects.User
+import com.moksamedia.moksalizer.data.objects.Category
+import com.moksamedia.moksalizer.security.MoksalizerRealm
 
 final log = LoggerFactory.getLogger(getClass().simpleName)
 
@@ -25,18 +25,17 @@ if (reset) {
 	User.dropCollection()
 
 	log.info "Creating admin user"
-
-	MessageDigest digest = MessageDigest.getInstance("MD5")
-	String hashed = digest.digest('admin'.padLeft(32, 'X').bytes).encodeBase64().toString()
-
+			
 	admin = new User(
 			lastName:"Hughes",
 			firstName:"Andrew",
-			screenName:"cantgetnosleep",
+			username:"cantgetnosleep",
 			email:"andrewcarterhughes@gmail.com",
-			hashedPassword:hashed,
+			roles:['admin'],
 			verified:true) // verified should be skipped, defaults to false
 
+	admin.setPassword('admin')
+	
 	admin.save()
 
 	new Seq().save()

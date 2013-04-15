@@ -1,0 +1,39 @@
+<div class="summary">
+	<div id="wordcloud">
+	<div id="tags-label">Tags</div>
+	<% tags.each { tag -> %>
+		<div><a class="tag-link" href="${blogHomeURL}/tag/${tag.nameComputerFriendly}">${tag.name} - ${tag.postCount()}</a></div>
+	<% } %>
+	</div>
+
+	<div id="post-index">
+		<ul id="recent-posts">
+			<% def lastDate = ""; posts.each { post -> %>
+				<li>
+					<div class="${ if(post.publish) 'published'; else 'unpublished'}">
+					<a href="${blogHomeURL}/post?seq=${post.sequenceNumber}">${((post.title == null || post.title == "") ? "Untitled" : post.title)}</a>
+					<%
+						def currentDate = post.datePublishedFormatted()
+						if (lastDate != currentDate) {
+							print "<div class=\"post-date\">$currentDate<div></div></div>"
+							lastDate = currentDate
+						}
+					%>
+					</div>
+					<% if (admin) { %>
+					<div class="post-admin">
+						<a class="post-edit post-admin-inline" href="${blogHomeURL}/editpost?id=${post._id}&source=summary">(Edit)</a>
+						<a class="post-delete post-admin-inline" href="${blogHomeURL}/deletepost?id=${post._id}&source=summary">(Delete)</a>
+						<% if (post.publish) { %>
+							<a class="post-hide post-admin-inline" href="${blogHomeURL}/hidepost?id=${post._id}&source=summary">(Hide)</a>
+						<% } else { %>
+							<a class="post-publish post-admin-inline" href="${blogHomeURL}/publishpost?id=${post._id}&source=summary">(Publish)</a>
+						<% } %>						
+					</div>
+					<% } %>
+
+				</li>
+			<% } %>
+		</ul>
+	</div>
+</div>

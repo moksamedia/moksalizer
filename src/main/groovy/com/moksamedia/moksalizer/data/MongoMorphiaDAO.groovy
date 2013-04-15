@@ -8,11 +8,13 @@ import com.github.jmkgreen.morphia.mapping.MappingException
 import com.github.jmkgreen.morphia.query.Query
 import com.github.jmkgreen.morphia.utils.ReflectionUtils
 import com.mongodb.Mongo
+import com.mongodb.MongoClient
+
 
 @Slf4j
 class MongoMorphiaDAO {
 
-	Mongo mongo
+	MongoClient mongo
 	Datastore ds	
 	
 	/*
@@ -28,21 +30,20 @@ class MongoMorphiaDAO {
 	 * @param dataObjectsPackage
 	 */
 	public MongoMorphiaDAO(Map params = [:]) {
-				
+		
+		log.info "PARAMS=${params.toMapString()}"		
+		
+		// Make sure we have a data objects package and a database name
 		if (params?.dataObjectsPackage == null) { throw new IllegalArgumentException("Creation of MongoMorphiaDAO requires dataObjectsPackage.") }
 		if (params?.databaseName == null) { throw new IllegalArgumentException("Creation of MongoMorphiaDAO requires databaseName.") }
-		
-		// Create Mongo instance
-		if (params?.databaseHost != null && params?.databasePort != null) {
-			mongo = new Mongo(params.databaseHost, params.databasePort)
-		}
-		else if (params?.databaseHost != null) {
-			mongo = new Mongo(params.databaseHost)
-		}
-		else {
-			mongo = new Mongo()
-		}
 				
+		// Set default host and port, if necessary
+		params.databaseHost = params.get('databaseHost', 'localhost')
+		params.databasePort = params.get('databasePort', 27017)
+		
+		log.info "Creating MongoClient with ${params.databaseHost}:${params.databasePort}"
+		mongo = new MongoClient(params.databaseHost, params.databasePort)
+			
 		// Create Morphia instance
 		Morphia morphia = new Morphia()
 		
@@ -56,12 +57,16 @@ class MongoMorphiaDAO {
 		injectConvenience()
 	}
 	
+	/**
+	 * Inject some convenience methods on classes
+	 */
 	private void injectConvenience() {
 		// inject a filterMap method in the query object
 		Query.metaClass.filterMap = { Map params ->
 			params.each  { key, value ->
 				delegate.filter(key, value)
 			}
+			delegate
 		}
 	}
 	
@@ -73,14 +78,19 @@ class MongoMorphiaDAO {
 	 * @return
 	 */
 	private mapPackage(String packageName, Morphia morphia) {
+		
+		def embedded = [], entity = []
+		
 		try {
 			for (Class c : ReflectionUtils.getClasses(packageName)) {
 				// Embedded
 				if (ReflectionUtils.getClassEmbeddedAnnotation(c) != null) {
+					embedded += [c]
 					morphia.map(c)
 				}
 				// Entity
 				else if (ReflectionUtils.getClassEntityAnnotation(c) != null) {
+					entity += [c]
 					morphia.map(c)
 					injectEntityClass(c)
 				}
@@ -90,14 +100,25 @@ class MongoMorphiaDAO {
 		} catch (ClassNotFoundException cnfex) {
 			throw new MappingException("Could not get map classes from package " + packageName, cnfex)
 		}
+		
+		log.info "@Entity classes found:"; entity.each { log.info "--" + it.simpleName + " (${it.package})" }
+		log.info "@Embedded classes found:"; embedded.each { log.info "--" + it.simpleName + " (${it.package})" }
 	}
 	
+	/**
+	 * Returns the name of the Mongo database being used
+	 * @return database name
+	 */
 	public getDatabaseName() {
 		ds.getMongo().getDatabaseName()
 	}
 	
+	/**
+	 * Inject the data object classes with the main convenience methods used to find,
+	 * get, remove, and count data objects.
+	 */
 	private injectEntityClass = { Class clazz -> 
-		
+				
 		clazz.metaClass.static.buildSearch = {
 			new Search(clazz)
 		}
@@ -160,7 +181,7 @@ class MongoMorphiaDAO {
 		}
 		
 		clazz.metaClass.static.getAll = { Map params ->
-			clazz.search.filterMap(params).asList()
+			clazz.search().filterMap(params).asList()
 		}
 
 		clazz.metaClass.static.getCount = { Map params ->
@@ -168,7 +189,7 @@ class MongoMorphiaDAO {
 		}
 			
 		clazz.metaClass.static.getOne = { Map params ->
-			clazz.search.filterMap(params).get()
+			clazz.search().filterMap(params).query.get()
 		}
 		
 		/*
@@ -188,6 +209,52 @@ class MongoMorphiaDAO {
 			ds.find(clazz).get()
 		}
 
+		clazz.metaClass.static.find = { Map prm = [:] ->
+			
+			Query query = ds.createQuery(clazz)
+			
+			def keys = prm.keySet()
+			
+			prm.each { k, v ->
+				
+				if (k == 'search') {
+					assert v instanceof Map
+					query.filterMap(v)
+				}
+				else if (k == 'sort') {
+					assert v instanceof String
+					query.order(v)
+				}
+				else if (k == 'only') {
+					assert v instanceof String || v instanceof List
+					assert !keys.contains('withoutFields')
+					query.retrievedFields(true, v)
+				}
+				else if (k == 'without') {
+					assert v instanceof String || v instanceof List
+					assert !keys.contains('onlyFields')
+					query.retrievedFields(false, v)
+				}
+				else if (k == 'batchSize') {
+					assert v instanceof Integer && v > 0
+					assert keys.contains('batchNum') || keys.contains('batchNumber')
+					query.limit(v)
+				}
+				else if (k == 'batchNum' || k == 'batchNumber') {
+					assert v instanceof Integer && v >= 0
+					assert keys.contains('batchSize')
+					query.limit(v)
+				}
+				else if (k == 'limit') {
+					assert v instanceof Integer && v > 0
+					query.limit(v)
+				}
+				
+			}
+			
+			query.asList()
+			
+		}
 
 			
 	}

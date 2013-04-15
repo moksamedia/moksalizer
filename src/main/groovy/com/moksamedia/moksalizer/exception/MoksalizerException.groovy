@@ -10,4 +10,10 @@ class MoksalizerException extends Exception {
 		super(message)
 		log.error message
 	}
+	
+	MoksalizerException(String message, Exception ex) {
+		super(message, ex)
+		log.error message
+	}
+
 }

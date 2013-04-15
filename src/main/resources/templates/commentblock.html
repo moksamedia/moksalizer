@@ -1,0 +1,55 @@
+<% if (post.comments != null && post.comments.size() > 0) { def comments=post.comments; %>
+<div class="comments">
+	<% if (comments.size() == 1) { %>
+	<h3 class="comments">1 response:</h3>
+	<% } else { %>
+	<h3 class="comments">${comments.size()} responses:</h3>
+	<% } %>
+	<ol class="comment-list">
+		<% comments.each { %>
+		<li class="comment">
+			<div class="comment-content">${it.html}</div>
+			<div class="comment-meta">
+				<div class="comment-author">${it.authorName}</div>
+				<div class="comment-date">${it.dateFormatted()}</div>
+			</div>
+		</li> <% } %>
+	</ol>
+	<div id="comment-respond">
+		<form action="$comment-action-url"
+			method="post" id="commentform">
+			<div class="leave-comment">
+				<fieldset>
+					<legend><span>Leave a Comment</span></legend>
+					<div class="comment-form">
+						<div class="comment-author-info">
+							<div>
+								<span id="comment-form-name">
+									<label><div>Name: <em>Required</em></div><div><input type="text" name="author" id="author" value=""></div></label>
+								</span>
+								<span id="comment-form-email">
+									<label><div>Email: <em>Required, not published</em></div><div><input type="text" name="email" id="email" value=""></div></label>
+								</span>
+							</div>
+						</div>
+						<div id="main-comment-section">
+						
+						<label><div>Comment: </div><textarea name="comment-text" id="comment-text-area" cols="50" rows="20"></textarea></label>
+						<div id="cancel-comment-reply">
+							<small><a rel="nofollow" id="cancel-comment-reply-link" href="/2012/08/02/liars-paradox/#respond" style="display: none;">Cancel Reply</a></small>
+						</div>
+						</div>
+						<div id="submit-comment-button">
+							<p class="subscribe-to-comments">
+								<input type="checkbox" name="subscribe" id="subscribe" value="subscribe" />
+								<label for="subscribe">Notify me of followup comments via e-mail</label>
+							</p>
+							<input type="submit" value="Post Comment">
+						</div>
+					</div>
+				</fieldset>
+			</div>
+		</form>
+	</div>
+</div>
+<% } %>

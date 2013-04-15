@@ -1,0 +1,21 @@
+<web-app>
+<filter>
+    <filter-name>Jersey Filter</filter-name>
+     <filter-class>com.sun.jersey.spi.container.servlet.ServletContainer</filter-class>
+        <init-param>
+            <param-name>com.sun.jersey.config.property.packages</param-name>
+            <param-value>com.moksamedia.moksalizer.rest</param-value>
+        </init-param>
+    <init-param>
+            <param-name>com.sun.jersey.config.property.WebPageContentRegex</param-name>
+            <param-value>/static/.*</param-value>
+        </init-param>
+</filter>
+<filter-mapping>
+    <filter-name>Jersey Filter</filter-name>
+    <url-pattern>/*</url-pattern>
+    <dispatcher>REQUEST</dispatcher>
+    <dispatcher>FORWARD</dispatcher>
+    <dispatcher>INCLUDE</dispatcher>
+</filter-mapping>
+</web-app>

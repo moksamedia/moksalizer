@@ -4,20 +4,24 @@ datastore {
 	
 	prod {
 	
-		host = 'localhost'
-		dataObjectsPackage = 'com.cantgetnosleep.blograt.dataobjects'
-		databaseBaseName = 'moksalizer'
+		databaseHost = 'localhost'
+		databasePort = 27017
+		dataObjectsPackage = 'com.moksamedia.moksalizer.data.objects'
+		databaseName = 'moksalizer'
 
 	}
 	test {
 		
-		host = 'localhost'
-		dataObjectsPackage = 'com.cantgetnosleep.blograt.dataobjects'
-		databaseBaseName = 'moksalizer_test'
+		databaseHost = 'localhost'
+		databasePort = 27017
+		dataObjectsPackage = 'com.moksamedia.moksalizer.data.objects'
+		databaseName = 'moksalizer_test'
 
 	}
 	
 }
+
+serverip = '50.116.24.233'
 
 googledrive {
 

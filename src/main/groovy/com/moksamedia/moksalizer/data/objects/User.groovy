@@ -1,29 +1,40 @@
 package com.moksamedia.moksalizer.data.objects
 
+import org.bson.types.ObjectId
 
+import com.github.jmkgreen.morphia.annotations.Entity
+import com.github.jmkgreen.morphia.annotations.Id
+import com.moksamedia.moksalizer.security.MoksalizerRealm
+
+
+@Entity
 class User {
 	
-	/*
-	def hasTypes = [
-		roles: refer(Role)
-	]
-	*/
+	@Id
+	private ObjectId id;
 	
 	String lastName
 	String firstName
 	
-	String screenName
+	String username
 	
 	String email
 	
-	String hashedPassword
+	byte[] hashedPassword
+	byte[] passwordSalt
 	
 	boolean verified = false
 	
-	def roles = []
+	Set<String> roles = []
 	
 	String toString() {
-		"$screenName : $firstName $lastName"
+		"$username : $firstName $lastName"
+	}
+	
+	public void setPassword(String password) {
+		def val = MoksalizerRealm.saltAndHashForPassword(password)
+		hashedPassword = val.hash
+		passwordSalt = val.salt
 	}
 	
 }

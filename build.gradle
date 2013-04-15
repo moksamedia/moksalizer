@@ -12,9 +12,13 @@
  * 
  */
 
+import com.sun.org.apache.bcel.internal.util.ClassPath;
 apply plugin: 'groovy'
 apply plugin: 'eclipse'
+apply plugin: 'war'
 apply plugin: 'jetty'
+
+//apply plugin: 'jetty'
 
 // PROJECT VERSION & GROUP
 project.version = 0.1
@@ -26,7 +30,17 @@ logging.captureStandardOutput(LogLevel.ERROR)
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+
 Logger log = LoggerFactory.getLogger("build-logger")
+
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath 'eu.appsatori:gradle-fatjar-plugin:0.1.2' // adds fatJar task
+	}
+}
 
 repositories {
 	mavenCentral()
@@ -50,7 +64,7 @@ dependencies {
 	compile 'javax.servlet:servlet-api:2.5'
 	
 	/* JAX-RS (JSR 311) API */
-	compile 'javax.ws.rs:jsr311-api:1.1.1'
+	providedCompile 'javax.ws.rs:jsr311-api:1.1.1'
 	
 	/* JERSEY */
 	compile 'com.sun.jersey:jersey-bundle:1.17'
@@ -60,6 +74,7 @@ dependencies {
 	
 	/* MORPHIA (https://github.com/jmkgreen/morphia) */
 	compile 'com.github.jmkgreen.morphia:morphia:1.2.2'
+	compile 'com.github.jmkgreen.morphia:morphia-logging-slf4j:1.2.2'
 	
 	/* GOOGLE DRIVE API */
 	compile 'com.google.api-client:google-api-client:1.14.1-beta'
@@ -69,8 +84,30 @@ dependencies {
 	
 	/* HTML PARSER */
 	compile 'org.htmlparser:htmlparser:1.6'
+	
+	/* APACHE SHIRO - SECURITY */
+	compile 'org.apache.shiro:shiro-all:1.2.1'
 }
+
+project.sourceSets {
+	web {
+	  resources {
+		srcDir 'src/web/templates'
+	  }
+	}
+}
+
+jettyRun.webAppSourceDirectory = file('static')
+jettyRun.contextPath = '/'
 
 war {
 	webXml = file('web.xml')
+	//classpath configurations.compile
 }
+
+/*
+jar {
+	from configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+}
+*/
+

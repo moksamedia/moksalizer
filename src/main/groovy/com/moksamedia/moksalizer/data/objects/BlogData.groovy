@@ -1,10 +1,15 @@
 package com.moksamedia.moksalizer.data.objects
 
+import org.bson.types.ObjectId
+
 import com.github.jmkgreen.morphia.annotations.Entity
+import com.github.jmkgreen.morphia.annotations.Id
 import com.github.jmkgreen.morphia.annotations.Reference
 
 @Entity
 class BlogData {
+		
+	@Id ObjectId id;
 	
 	String name = 'Blograt Blog'
 	String description = "A blograt blog..."
@@ -12,12 +17,9 @@ class BlogData {
 	
 	@Reference
 	User admin
-	
-	// expandable, custom map of values
-	public Map ext = [:]
-	
+		
 	// values passed into servlet pages as they are rendered
-	public def getContext() {
+	public def getImmutableContext() {
 		
 		def context = [
 			blogName: name,
@@ -25,10 +27,8 @@ class BlogData {
 			blogHomeURL: homeURL,
 			admin:admin
 			]
-		
-		context += ext
-		
-		context
+				
+		context.asImmutable()
 	}
 	
 }

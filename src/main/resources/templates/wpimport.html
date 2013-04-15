@@ -1,0 +1,23 @@
+<div class="pathIsDialog" id="wpimport-start">
+	<div id="wpImportText">Please enter the URL of the Wordpress website to import. For this to work, the <a href="http://wordpress.org/extend/plugins/json-api/">JSON API plugin</a> must be installed.</div>
+	<div id="urlFormWrapper">
+		<form action="#this" method="get" id="import" >
+			<label for="wpSiteUrl">Wordpress Site URL</label>
+			<input type="text" name="wpSiteUrl" id="wpSiteUrl" value="http://" />
+			<label for="wpSiteUrl">Pages to import (slug names, separated by commas)</label>
+			<input type="text" name="wpPagesToImport" id="wpPagesToImport" value="" />
+			<div class="toCenter"><input type="submit" id="submitImportUrl" name="submitImportUrl" value="Start Import" /></div>
+		</form>
+	</div>
+</div>
+<div class="pathIsDialog" id="wpimport-inprocess" style="display:none;">
+	<div>The request is being processed. This may take a while. Thanks.</div>
+</div>
+<div class="pathIsDialog" id="wpimport-received" style="display:none;">
+	<div>The JSON payload has been received.</div>
+</div>
+<div class="pathIsDialog" id="wpimport-error" style="display:none;">
+	<div>Sorry. There was an error.</div>
+</div>
+
+<script src="/javascript/wpimport.js" type="text/javascript"></script>

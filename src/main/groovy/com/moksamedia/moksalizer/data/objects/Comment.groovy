@@ -1,6 +1,12 @@
 package com.moksamedia.moksalizer.data.objects
 
-@Entity
+import org.bson.types.ObjectId
+
+import com.github.jmkgreen.morphia.annotations.Id
+import com.github.jmkgreen.morphia.annotations.Embedded
+import com.moksamedia.moksalizer.Utility
+
+@Embedded
 class Comment {
 	
 	String authorName

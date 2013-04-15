@@ -1,0 +1,22 @@
+<div class="post-list">
+	<% posts.each { post -> %>
+		<div class="post-wrapper">
+			<h3 class="post-title"><a href="${blogHomeURL}/post?seq=${post.sequenceNumber}">${post.title}</a></h3>
+				<% if (admin) { %>
+				<div class="post-admin">
+					<a class="post-edit post-admin-inline" href="${blogHomeURL}/editpost?id=${post._id}&source=summary">(Edit)</a>
+					<a class="post-delete post-admin-inline" href="${blogHomeURL}/deletepost?id=${post._id}&source=summary">(Delete)</a>
+					<% if (post.publish) { %>
+						<a class="post-hide post-admin-inline" href="${blogHomeURL}/hidepost?id=${post._id}&source=summary">(Hide)</a>
+					<% } else { %>
+						<a class="post-publish post-admin-inline" href="${blogHomeURL}/publishpost?id=${post._id}&source=summary">(Publish)</a>
+					<% } %>						
+				</div>
+				<% } %>
+			<div class="post-content data-id="${post._id}" data-seqnumber="${post.sequenceNumber}">${post.html}</div>
+			<div class="post-divider"> &bull; &bull; &bull; </div>
+		</div>
+	<% } %>
+</div>
+<script type="application/javascript" src="/javascript/frontpage.js"></script>
+<div class="loading-msg" id="loading-msg"><div>Loading more posts...</div></div>

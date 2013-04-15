@@ -1,0 +1,28 @@
+<web-app>
+<servlet>
+	<servlet-name>Moksalizer</servlet-name>
+	<servlet-class>
+		com.sun.jersey.spi.container.servlet.ServletContainer
+	</servlet-class>
+	<init-param>
+		<param-name>com.sun.jersey.config.property.packages</param-name>
+		<param-value>com.moksamedia.moksalizer.rest</param-value>
+	</init-param>
+	<load-on-startup>1</load-on-startup>
+</servlet>
+<servlet-mapping>
+	<servlet-name>Moksalizer</servlet-name>
+	<url-pattern>/*</url-pattern>
+</servlet-mapping>
+<listener>
+    <listener-class>com.moksamedia.moksalizer.ServletInitializer</listener-class>
+</listener>
+<filter>
+   <filter-name>Serve Static Filter</filter-name>
+   <filter-class>com.moksamedia.moksalizer.ServeStaticFilter</filter-class>
+</filter>
+<filter-mapping>
+   <filter-name>Serve Static Filter</filter-name>
+   <servlet-name>Moksalizer</servlet-name>
+</filter-mapping>
+</web-app>
