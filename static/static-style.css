@@ -1,6 +1,6 @@
 /* Basic Form Styling */
 
-input[type="text"], textarea {
+input[type="text"], input[type="password"], textarea {
 	border: 1px solid #DDD;
 	padding: 3px;
 	font-family: helvetica, arial, sans-serif;
@@ -9,7 +9,7 @@ input[type="text"], textarea {
 	border-color: #ccc;
 }
 
-input,input[type="password"],input[type="search"],isindex {
+input,input[type="search"],isindex {
 	-webkit-appearance: textfield;
 	padding: 1px;
 	background-color: white;
@@ -63,6 +63,60 @@ input[type="submit"] {
 	-webkit-border-radius: 5px;
 	cursor: pointer;
 }
+
+/* LOGIN */
+
+div#login-main-div {
+	margin-top:150px;
+	width:50%;
+	margin:0 auto;
+
+}
+
+div#login-info {
+	text-align: left;
+}
+
+form.login {
+	text-align:center;
+}
+
+form.login label {
+	font-size:0.9em;
+	color:#669;
+	margin-top:20px; 
+}
+
+form.login label input {
+	width:100%;
+	font-size:1.0em;
+	padding-top:5px;
+	padding-bottom:5px;
+}
+
+label.username {
+	display:block;
+}
+
+label.password {
+	display:block;
+}
+
+button.login-button {
+	font-size:0.9em;
+	color: #669;
+	padding-left:20px;
+	padding-right:20px;
+	padding-top:5px;
+	padding-bottom:5px;
+	margin-top:30px;
+	margin-bottom:20px;
+}
+
+div#forgot-login-div {
+	font-size:0.8em;
+}
+
 
 /* Comment Submit and Textarea */
 
@@ -538,109 +592,6 @@ input:not([type="image"]), textarea {
 	text-decoration:none;
 }
 
-
-/* LOGIN WINDOW */
-
-/* Mask for background, by default is not display */
-#mask {
-	display: none;
-	background: #000; 
-	position: fixed; left: 0; top: 0; 
-	z-index: 10;
-	width: 100%; height: 100%;
-	opacity: 0.8;
-	z-index: 999;
-}
-
-/* You can customize to your needs  */
-.login-popup{
-	display:none;
-	background: #333;
-	padding: 10px; 	
-	border: 2px solid #ddd;
-	float: left;
-	font-size: 1.2em;
-	position: fixed;
-	top: 50%; left: 50%;
-	z-index: 99999;
-	box-shadow: 0px 0px 20px #999; /* CSS3 */
-        -moz-box-shadow: 0px 0px 20px #999; /* Firefox */
-        -webkit-box-shadow: 0px 0px 20px #999; /* Safari, Chrome */
-	border-radius:3px 3px 3px 3px;
-        -moz-border-radius: 3px; /* Firefox */
-        -webkit-border-radius: 3px; /* Safari, Chrome */
-}
-
-img.btn_close {
-	float: right; 
-	margin: -28px -28px 0 0;
-}
-
-fieldset { 
-	border:none; 
-}
-
-form.signin .textbox label { 
-	display:block; 
-	padding-bottom:7px; 
-}
-
-form.signin .textbox span { 
-	display:block;
-}
-
-form.signin p, form.signin span { 
-	color:#999; 
-	font-size:11px; 
-	line-height:18px;
-} 
-
-form.signin .textbox input { 
-	background:#666666; 
-	border-bottom:1px solid #333;
-	border-left:1px solid #000;
-	border-right:1px solid #333;
-	border-top:1px solid #000;
-	color:#fff; 
-        border-radius: 3px 3px 3px 3px;
-	-moz-border-radius: 3px;
-        -webkit-border-radius: 3px;
-	font:13px Arial, Helvetica, sans-serif;
-	padding:6px 6px 4px;
-	width:200px;
-}
-
-form.signin input:-moz-placeholder { color:#bbb; text-shadow:0 0 2px #000; }
-form.signin input::-webkit-input-placeholder { color:#bbb; text-shadow:0 0 2px #000;  }
-
-.login_button { 
-	background: -moz-linear-gradient(center top, #f3f3f3, #dddddd);
-	background: -webkit-gradient(linear, left top, left bottom, from(#f3f3f3), to(#dddddd));
-	background:  -o-linear-gradient(top, #f3f3f3, #dddddd);
-        filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#f3f3f3', EndColorStr='#dddddd');
-	border-color:#000; 
-	border-width:1px;
-        border-radius:4px 4px 4px 4px;
-	-moz-border-radius: 4px;
-        -webkit-border-radius: 4px;
-	color:#333;
-	cursor:pointer;
-	display:inline-block;
-	padding:6px 6px 4px;
-	margin-top:10px;
-	font:12px; 
-	width:200px;
-}
-
-.login_button:hover { 
-	background:#ddd;
-}
-
-a.forgot_login {
-	color:white;
-	margin-top:10px;
-	opacity:0.5;
-}
 
 /* WP IMPORT */
 

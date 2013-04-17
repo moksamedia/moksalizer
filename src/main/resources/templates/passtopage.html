@@ -1,0 +1,12 @@
+<form name='hiddenvalues' id='passed-to-page-form' style='display:none'>
+	<% passToPage?.each { k,v -> %>
+		<input type='hidden' id='hidden-<% print k %>' name='<% print k %>' value='<% print v.toString() %>'>
+	<% } %>
+</form>
+<!--GSP IGNORE-->
+<script>
+function getPassedToPage(name) {
+	return $('#hidden-' + name).val()
+ }
+</script>
+<!--GSP IGNORE-->

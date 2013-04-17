@@ -6,6 +6,15 @@ import groovy.util.logging.Slf4j
 import com.moksamedia.moksalizer.exception.TemplateRenderException
 
 @Slf4j
+
+/*
+ * The IGNORE_TOKEN is used to exclude portions of the template from rendering, esp.
+ * important with JQuery code because of the dollar signs.
+ * 
+ * [template:templatename] can be used to load a template and render its contents
+ * 
+ * [block:blockname] is used to load a block of un-rendered text/html/javascript
+ */
 class BlogratTemplater {
 
 	public static final String IGNORE_TOKEN = "<!--GSP IGNORE-->"
@@ -13,17 +22,26 @@ class BlogratTemplater {
 	public static final String BLOCK_PATTERN = /\[block:\s*(.+?)\]/
 	
 	String templateRoot = 'templates'
-		
-	String render(templateName, context=[:]) {
-		renderTemplate(loadBlock(templateName), new SafeMap(context))
+	
+	
+	///////////////////////////////////////////////////////////////////////////////////////////
+	//MAIN ENTRY METHOD
+	
+	public String render(templateName, context=[:]) {
+		String rendered = renderTemplate(loadTemplateFile(templateName), new SafeMap(context))
+		rendered.replaceAll(~IGNORE_TOKEN, '')
 	}
 	
-	String loadBlock(templateName) {
+	
+	///////////////////////////////////////////////////////////////////////////////////////////
+	// FIND AND LOAD TEMPLATE RAW TEXT
+	
+	private String loadTemplateFile(templateName) {
 		
 		String text = ''
 
 		try {
-			text += loadTemplateText(templateName)
+			text += loadTemplateFileText(templateName)
 		}
 		catch(java.io.IOException ex) {
 			throw new TemplateRenderException("Unable to find template: $templateName", ex)
@@ -32,7 +50,7 @@ class BlogratTemplater {
 		text
 	}
 	
-	String loadTemplateText(templateName) {
+	private String loadTemplateFileText(templateName) {
 		
 		String text = ''
 		String fullTemplateFilename = [templateRoot, templateName].join(File.separator)
@@ -58,11 +76,16 @@ class BlogratTemplater {
 		text
 	 }
 	
-	InputStream loadResource(String path) {
+	private InputStream loadResource(String path) {
 		Thread.currentThread().contextClassLoader.getResourceAsStream(path)
 	}
 	
-	protected String processTags(String text, def context) {
+	
+	///////////////////////////////////////////////////////////////////////////////////////////
+	// RENDER THE TEMPLATE (this is where the magic happens)
+	
+	
+	private String processTags(String text, def context) {
 		
 		Closure processExpression = { String expression ->
 
@@ -104,7 +127,7 @@ class BlogratTemplater {
 				""
 			}
 			else {
-				IGNORE_TOKEN + loadTemplateText(templateName + ".html") + IGNORE_TOKEN
+				IGNORE_TOKEN + loadTemplateFileText(templateName + ".html") + IGNORE_TOKEN
 			}
 
 		}
@@ -118,7 +141,7 @@ class BlogratTemplater {
 				""
 			}
 			else {
-				processTags(loadTemplateText(templateName + ".html"), context) // note the recursive call here so that template tags inside templates loaded from
+				processTags(loadTemplateFileText(templateName + ".html"), context) // note the recursive call here so that template tags inside templates loaded from
 																			   // tags are themselves processed
 			}
 
@@ -127,6 +150,7 @@ class BlogratTemplater {
 		text
 	}
 
+	
 	/**
 	 * Most of the code below allows the user to use the ignoreToken to mark off sections of the
 	 * template to be ignored by the GSP processing. This is done by splitting the input text
@@ -136,7 +160,7 @@ class BlogratTemplater {
 	 * @param context
 	 * @return rendered text
 	 */
-	protected String renderTemplate(String text, def context) {
+	private String renderTemplate(String text, def context) {
 
 		text  = processTags(text, context)
 

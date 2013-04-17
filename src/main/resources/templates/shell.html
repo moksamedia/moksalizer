@@ -14,9 +14,5 @@
 		[template:footer]
 	</div>
 </body>
-<form name='hiddenvalues' style='display:none'>
-	<% passToPage?.each { k,v -> %>
-		<input type='hidden' name='<% print k %>' value='<% print v.toString() %>'>
-	<% } %>
-</form>
+[template:passtopage]
 </html>

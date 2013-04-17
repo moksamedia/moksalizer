@@ -13,7 +13,8 @@ class BlogData {
 	
 	String name = 'Blograt Blog'
 	String description = "A blograt blog..."
-	String homeURL = 'http://localhost:5000'
+	String homeUrl = 'http://localhost:8080'
+	String homeUrlSsl = 'https://localhost:8443'
 	
 	@Reference
 	User admin
@@ -24,7 +25,8 @@ class BlogData {
 		def context = [
 			blogName: name,
 			blogDescription:description,
-			blogHomeURL: homeURL,
+			blogHomeUrl: homeUrl,
+			blogHomeUrlSsl: homeUrlSsl,
 			admin:admin
 			]
 				

@@ -12,7 +12,9 @@
  * 
  */
 
-import com.sun.org.apache.bcel.internal.util.ClassPath;
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'war'
@@ -97,8 +99,13 @@ project.sourceSets {
 	}
 }
 
-jettyRun.webAppSourceDirectory = file('static')
-jettyRun.contextPath = '/'
+keystore = file('src/main/resources/jetty-ssl.keystore').getAbsolutePath()
+
+[jettyRun, jettyRunWar]*.configure {
+	webAppSourceDirectory = file('static')
+	contextPath = '/'
+	jettyConfig= file('jetty-web.xml')
+}
 
 war {
 	webXml = file('web.xml')

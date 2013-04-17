@@ -17,15 +17,18 @@ import javax.ws.rs.core.Context
 import javax.ws.rs.core.UriInfo
 
 import org.apache.shiro.SecurityUtils
+import org.apache.shiro.authc.AuthenticationException
 import org.apache.shiro.authc.UsernamePasswordToken
 
 import com.moksamedia.moksalizer.BlogratTemplater
 import com.moksamedia.moksalizer.Controller
 import com.moksamedia.moksalizer.PageContext
+import com.moksamedia.moksalizer.ShiroFilter
 import com.moksamedia.moksalizer.data.WordpressImporterJson
 import com.moksamedia.moksalizer.data.objects.Post
 import com.moksamedia.moksalizer.data.objects.Tag
 import com.moksamedia.moksalizer.security.MoksalizerRealm
+
 
 @Slf4j
 @Path("/")
@@ -35,16 +38,11 @@ public class Root {
 	@Context HttpServletResponse response
 	@Context HttpServletRequest request
 	@Context UriInfo uri
-	
-	// Controller is a singleton, save a pointer for convenience
-	public static final Controller controller = Controller.instance
-	
-	// This is final and immutable to avoid threading problems
-	public static final Map blogCtx = controller.blogData.getImmutableContext()
-	
-	public static final Map cssCtx = ([
+		
+	public final Map cssCtx = ([
 			contentWidth:800
 		]).asImmutable()
+		
 		
 	public Root() {
 		log.info "Creating ROOT"
@@ -77,18 +75,17 @@ public class Root {
 		render(filename, cssCtx)
 	}
 	
+	@ShiroFilter('authc,ssl[8443]')
 	@GET
 	@Produces('text/html')
 	public String getRoot(@QueryParam('batchnum') @DefaultValue('0') int batchNum, 
 						  @QueryParam('batchsize') @DefaultValue('10') int batchSize) {
-			
-		log.info "batchNum = $batchNum, batchSize = $batchSize"
-		
+					
 		def posts = Post.find(
-				search		: [type:'post', publish:true],
-				sort		: '-dateCreated',
-				batchSize	: batchSize,
-				batchNumber	: batchNum)						
+			search		: [type:'post', publish:true],
+			sort		: '-dateCreated',
+			batchSize	: batchSize,
+			batchNumber	: batchNum)						
 							 				 
 		def context = new PageContext([
 			posts:posts, 
@@ -100,37 +97,50 @@ public class Root {
 		render('shell.html', context)
 	}
 	
+	/**
+	 * An ajax method used to dynamically load more posts.
+	 * 
+	 * @param batchNum
+	 * @param batchSize
+	 * @param ajaxloadtype post, tag, or category (posts = front page, all posts)
+	 * @param id identifier of the tag or category for the list of posts
+	 * @return
+	 */
 	@GET
 	@Produces('text/html') 
 	@Path('loadpostsajax')
 	public String loadPostsAjax (@QueryParam('batchnum') @DefaultValue('0') int batchNum, 
-						  @QueryParam('batchsize') @DefaultValue('10') int batchSize,
-						  @QueryParam('ajaxloadtype') @DefaultValue('allposts') String ajaxloadtype) {
+						  		 @QueryParam('batchsize') @DefaultValue('10') int batchSize,
+								 @QueryParam('ajaxloadtype') @DefaultValue('') String ajaxloadtype,
+								 @QueryParam('id') @DefaultValue('') String id) {
 		
+		
+						  
 		def search = [type:"post", publish:true]
 		
 		// posts for a specific tag
 		if (ajaxloadtype == 'tag') { // start at one bc '/tag/verse' is split to ['','tag','verse']
-			assert parts.size() == 3
-			Tag tag = Tag.getOne(slug:parts[2])
+			Tag tag = Tag.getOne()
 			assert tag != null
 			search += ["tags":tag._id]
 		}
 		// posts for a category
 		else if (ajaxloadtype == 'category') {
-			assert parts.size() == 3
-			Category category = Category.getOne(slug:parts[2])
+			Category category = Category.getOne()
 			assert tag != null
 			search += ["categories":tag._id]
+		}
+		else if (ajaxloadtype != 'post'){
+			log.error "ajaxloadtype unexpected value: $ajaxloadtype"
+			throw new WebApplicationException(HttpServletResponse.SC_BAD_REQUEST)
 		}
 
 		// get a batch of posts specified by search params and sorted by date
 		def posts = Post.find(
-				search		: search,
-				sort		: '-dateCreated',
-				batchSize	: batchSize,
-				batchNumber	: batchNum
-			)
+			search		: search,
+			sort		: '-dateCreated',
+			batchSize	: batchSize,
+			batchNumber	: batchNum)
 		
 		
 		// add the posts to the context var
@@ -155,7 +165,9 @@ public class Root {
 			throw new WebApplicationException(HttpServletResponse.SC_FORBIDDEN)
 		}
 
-		def context = [windowTitle:"Import from Wordpress Site", body:'wpimport'] + getStandardContext(request)
+		def context = new PageContext([
+			windowTitle:"Import from Wordpress Site", 
+			body:'wpimport'])
 
 		render('/templates/shell.html', context)
 
@@ -164,15 +176,23 @@ public class Root {
 	@GET
 	@Produces('application/json')
 	@Path('importgetjson')
-	public String wordpressImportGetJson(@PathParam('pagesToImport') String pagesToImport) {
+	public String wordpressImportGetJson(@QueryParam('pagesToImport') String pagesToImport,
+										 @QueryParam('url') String url) {
 
+		/*	
 		if (!MoksalizerRealm.isAdmin(request)) {
 			throw new WebApplicationException(HttpServletResponse.SC_FORBIDDEN)
 		}
+		
+		if (url == null || url.trim() == '') {
+			throw new WebApplicationException(HttpServletResponse.SC_BAD_REQUEST)
+		}
+		*/
+										 
+		log.info "Importing from URL:" + url
+		log.info "Importing pages: $pagesToImport"
 
-		log.info "URL:" + params?.url
-
-		WordpressImporterJson importer = new WordpressImporterJson(controller.blogData.admin, params?.url, './static/images', '/images')
+		WordpressImporterJson importer = new WordpressImporterJson(Controller.instance.blogData.admin, url, './static/images', '/images')
 
 		String posts = importer.fetchAllPosts()
 		importer.processPosts(posts)
@@ -190,14 +210,46 @@ public class Root {
 		posts
 	}
 
-	@POST
+	@GET
+	@Produces('text/html')
 	@Path('login')
-	public String login(@FormParam('username') String username,
-						@FormParam('password') String password) {
+	public String login() {
+
+		def context = new PageContext([
+			windowTitle:"Login",
+			body:'login'])
+
+		render('/templates/shell.html', context)
+		
+	}
+
+	@POST
+	@Produces('text/html')	
+	@Path('login-ajax')
+	public String loginajax(@FormParam('username') String username,
+							@FormParam('password') String password) {
+	
+		if (username == null || username.trim() == '') {
+			throw new AuthenticationException("Username null or empty.")
+		}					
+		
+		if (password == null || password.trim() == '') {
+			throw new AuthenticationException("Password null or empty.")
+		}					
+	
 		log.info "$username, $password"
 		UsernamePasswordToken token = new UsernamePasswordToken(username, password)
 		token.setRememberMe(true)
-		SecurityUtils.getSubject().login(token)						
+		try {
+			SecurityUtils.getSubject().login(token)
+		}
+		catch (AuthenticationException ex) {
+			log.info "Unable to authenticate"
+			throw new WebApplicationException(403)
+		}
+		log.info "Authenticated: $username"
+		response.status = HttpServletResponse.SC_OK
+		"SUCCESS"
 	}
 
 	@Path('logout')

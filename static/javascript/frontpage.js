@@ -12,9 +12,17 @@ var batchSize = 10;
 	
 function loadMorePosts() {
 	
+	/*
+	 * ajaxloadtype = post | tag | category, and is used to differentiate between requests for more posts
+	 * from the front page, from a page showing all posts for a tag, or from a page showing all posts for
+	 * a category. It's set by adding the key and value to the passToPage property of the rendering context,
+	 * and is then turned into a hidden form element.
+	 */
+	ajaxloadtype = getPassedToPage('ajaxloadtype')
+	
 	$("div.loading-msg").appendTo("div.post-list").delay(500).fadeIn('slow');
 		
-	$.get('/loadpostsajax', {'batchnum':batchNum, 'batchsize':batchSize, 'path':location.pathname}, function(data) {
+	$.get('/loadpostsajax', {'batchnum':batchNum, 'batchsize':batchSize, 'ajaxloadtype':ajaxloadtype}, function(data) {
 		
 		html = $(data).html(); // this extracts the contents of the top-level div.post-list for us
 		

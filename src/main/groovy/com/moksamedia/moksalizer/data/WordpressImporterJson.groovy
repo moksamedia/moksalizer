@@ -166,11 +166,11 @@ class WordpressImporterJson {
 				post.save()
 
 				if (type == "post") {
-					log.info "Post created: ${post.author.screenName} - ${sequenceNumber} - ${post.title} - ${post.nameComputerFriendly} - ${post.html}"
+					log.info "Post created: ${post.author.username} - ${sequenceNumber} - ${post.title} - ${post.slug} - ${post.html}"
 					postsCreated += post
 				}
 				else {
-					log.info "Page created: ${post.author.screenName} - ${sequenceNumber} - ${post.title} - ${post.nameComputerFriendly} - ${post.html}"
+					log.info "Page created: ${post.author.username} - ${sequenceNumber} - ${post.title} - ${post.slug} - ${post.html}"
 					pagesCreated += post
 				}
 

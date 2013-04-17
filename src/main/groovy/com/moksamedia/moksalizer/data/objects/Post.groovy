@@ -129,7 +129,7 @@ class Post {
 		
 		String result = ""
 		
-		result += "'${title}' by ${author?.screenName} (${author?.firstName}, ${author?.lastName})\n"
+		result += "'${title}' by ${author?.username} (${author?.firstName}, ${author?.lastName})\n"
 		result += "Date created: " + dateCreated?.toString() + "\n"
 		result += "Date last edited: " + lastEdited?.toString() + "\n"
 		result += "Date published: " + datePublished?.toString() + "\n"

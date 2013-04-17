@@ -67,6 +67,12 @@ class MoksalizerRealm extends AuthorizingRealm {
 
 	}
 
+	/*
+	 * I am storing both the hashed password and the password salt as a byte array, so no
+	 * base64 encoding or decoding is necessary. NOTE: previously, when I was base64 encoding
+	 * the password, it was being decoded automatically BUT the salt WAS NOT, and this
+	 * caused authentication to fail. 
+	 */
 	@Override
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		

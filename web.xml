@@ -1,9 +1,9 @@
 <web-app>
 <listener>
-    <listener-class>com.moksamedia.moksalizer.servlet.ServletInitializer</listener-class>
+    <listener-class>org.apache.shiro.web.env.EnvironmentLoaderListener</listener-class>
 </listener>
 <listener>
-    <listener-class>org.apache.shiro.web.env.EnvironmentLoaderListener</listener-class>
+    <listener-class>com.moksamedia.moksalizer.servlet.ServletInitializer</listener-class>
 </listener>
 <filter>
     <filter-name>ShiroFilter</filter-name>

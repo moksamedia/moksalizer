@@ -2,11 +2,18 @@ package com.moksamedia.moksalizer
 
 import groovy.util.logging.Slf4j
 
+import java.lang.reflect.Method
+
+import javax.ws.rs.Path
+
 import org.apache.shiro.SecurityUtils
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher
 import org.apache.shiro.config.IniSecurityManagerFactory
 import org.apache.shiro.mgt.DefaultSecurityManager
+import org.apache.shiro.web.filter.mgt.DefaultFilterChainManager
+import org.apache.shiro.web.filter.mgt.FilterChainManager
 
+import com.github.jmkgreen.morphia.utils.ReflectionUtils
 import com.moksamedia.moksalizer.data.MongoMorphiaDAO
 import com.moksamedia.moksalizer.data.objects.BlogData
 import com.moksamedia.moksalizer.data.objects.Post
@@ -36,7 +43,7 @@ class Controller {
 	def config
 
 	public boolean isDeployed = false
-	public boolean resetOnLoad = true
+	public boolean resetOnLoad = false
 	
 	public Controller() {
 				
@@ -54,10 +61,38 @@ class Controller {
 		
 		setResetOnLoad()		
 		
+		configureShiroFilters()
+		
 		//configureSecurity()
 		
 		//googleDriveController = new GoogleDriveController(config.googledrive)
 
+	}
+	
+	private void configureShiroFilters() {
+		
+		log.info "Configuring Shiro Filters"
+		
+		FilterChainManager manager = new DefaultFilterChainManager()
+		
+		def classes = ReflectionUtils.getClasses('com.moksamedia.moksalizer.rest')
+		
+		classes?.each { Class clazz ->
+			def classPathAnno = ReflectionUtils.getAnnotation(clazz, Path)
+			if (classPathAnno != null) {
+				String rootPath = classPathAnno.value()
+				clazz.methods.each { Method method ->
+					def shiroAnno = method.getAnnotation(ShiroFilter)
+					if (shiroAnno != null) {
+						def methodPathAnno = method.getAnnotation(Path)
+						String methodPath = (methodPathAnno == null) ? '' : '/' + methodPathAnno.value()
+						String fullPath = rootPath + methodPath
+						manager.createChain(fullPath, shiroAnno.value())
+						log.info "Created Chain: $fullPath = ${shiroAnno.value()}"
+					}
+				}
+			}
+		}
 	}
 	
 	private void configureSecurity() {

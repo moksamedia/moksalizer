@@ -17,7 +17,7 @@ class SanitizeStackTraceFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 					
-		try {
+		try {			
 			chain.doFilter(request, response)
 		}
 		catch (Exception ex){

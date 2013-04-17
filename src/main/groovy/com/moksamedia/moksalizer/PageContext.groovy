@@ -16,6 +16,10 @@ class PageContext {
 		ctx += blogCtx 
 		ctx += moreCtx
 		ctx += [admin:MoksalizerRealm.isAdmin(), alreadyLoggedIn:MoksalizerRealm.isAuthenticated()]
+		Map toPass = [:]
+		toPass += blogCtx
+		toPass.remove('admin')
+		passToPage(toPass)
 	}
 	
 	public PageContext add(def params) {

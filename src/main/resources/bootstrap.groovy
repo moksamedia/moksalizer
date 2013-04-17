@@ -45,7 +45,7 @@ if (reset) {
 
 }
 else {
-	admin = User.getOne(screenName:'cantgetnosleep')
+	admin = User.getOne(username:'cantgetnosleep')
 }
 
 BlogData.dropCollection()
@@ -53,7 +53,18 @@ BlogData blogData = new BlogData()
 blogData.admin = admin
 blogData.description = "Andrew's awesome blog."
 blogData.name = "The path is..."
-blogData.homeURL = (deployed ? 'http://www.moksamedia.com' : '')
+
+if (deployed) {
+	blogData.homeUrl = 'http://www.moksamedia.com'
+	blogData.homeUrlSsl = 'https://www.moksamedia.com'
+	
+}
+else {
+	blogData.homeUrl = 'http://localhost:8080'
+	blogData.homeUrlSsl = 'https://localhost:8443'
+	
+}
+
 blogData.save()
 
 

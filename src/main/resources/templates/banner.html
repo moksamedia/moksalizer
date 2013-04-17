@@ -6,7 +6,7 @@
     	<% } else {%>
     		<li id="login"><a href="#logout" class="logout">Logout</a></li>
     	<% } %>
-    	<li><a href="/">HOME</a></li>
+    	<li><a href="${blogHomeURL}">HOME</a></li>
    	 	<li><a href="/contact" class="smcf-link">CONTACT</a></li>
 	  	<li><a href="/page/about">About</a></li>
 		<li><a href="/summary">Summary</a></li>
@@ -14,23 +14,4 @@
 	</ul>
 	</div>
 	<a id="banner-link" href="${blogHomeURL}" title="Home"><img id="banner-image" src="/thepathis-banner.png" /></a>
-</div>
-<div id="login-box" class="login-popup">
-        <a href="#" class="close"><img src="/close_pop.png" class="btn_close" title="Close Window" alt="Close" /></a>
-          <form method="post" class="signin" action="#">
-                <fieldset class="textbox">
-            	<label class="username">
-                <span>Username or email</span>
-                <input id="username" name="username" value="" type="text" autocomplete="on" placeholder="Username">
-                </label>
-                <label class="password">
-                <span>Password</span>
-                <input id="password" name="password" value="" type="password" placeholder="Password">
-                </label>
-                <button class="submit login_button" type="button">Sign in</button>
-                <p>
-                	<a class="forgot_login" href="#">Forgot your password?</a>
-                </p>        
-                </fieldset>
-          </form>
 </div>

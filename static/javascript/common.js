@@ -83,10 +83,13 @@ function loadLogin() {
 	
 	// called when LOGIN button is clicked
 	$("form button.login_button").click(function() {
+		
+		var url = getPassedToPage('blogHomeUrlSsl') + '/login'
+				
 	    $.ajax({
 	      type: "POST",
 	      //url: 'https://' + window.location.host + '/login',
-	      url: 'login',
+	      url: url,
 	      data: $('form').serialize(),
 	      dataType:'json',
 	      success: function(data) {
