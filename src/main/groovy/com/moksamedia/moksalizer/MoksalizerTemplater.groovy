@@ -5,7 +5,6 @@ import groovy.util.logging.Slf4j
 
 import com.moksamedia.moksalizer.exception.TemplateRenderException
 
-@Slf4j
 
 /*
  * The IGNORE_TOKEN is used to exclude portions of the template from rendering, esp.
@@ -15,14 +14,14 @@ import com.moksamedia.moksalizer.exception.TemplateRenderException
  * 
  * [block:blockname] is used to load a block of un-rendered text/html/javascript
  */
-class BlogratTemplater {
+@Slf4j
+class MoksalizerTemplater {
 
 	public static final String IGNORE_TOKEN = "<!--GSP IGNORE-->"
 	public static final String TEMPLATE_PATTERN = /\[template:\s*(.+?)\]/
 	public static final String BLOCK_PATTERN = /\[block:\s*(.+?)\]/
 	
-	String templateRoot = 'templates'
-	
+	public static final String templateRoot = Controller.instance.config.templateRoot
 	
 	///////////////////////////////////////////////////////////////////////////////////////////
 	//MAIN ENTRY METHOD
@@ -37,6 +36,9 @@ class BlogratTemplater {
 	// FIND AND LOAD TEMPLATE RAW TEXT
 	
 	private String loadTemplateFile(templateName) {
+		
+		File file = new File('.')
+		log.info "BASE PATH = ${file.getAbsolutePath()}"
 		
 		String text = ''
 
@@ -57,9 +59,10 @@ class BlogratTemplater {
 			
 		try {
 			text += new File(fullTemplateFilename).text
+			log.info "Template file (${fullTemplateFilename}) found."
 		} 
 		catch(java.io.FileNotFoundException origEx) {
-			
+						
 			def resource = loadResource(templateName)
 			
 			if (!resource) {
@@ -72,6 +75,9 @@ class BlogratTemplater {
 			}
 			
 			text += resource.text
+			
+			log.info "Template file (${templateName}) found as resource."
+			
 		}
 		text
 	 }
@@ -88,8 +94,6 @@ class BlogratTemplater {
 	private String processTags(String text, def context) {
 		
 		Closure processExpression = { String expression ->
-
-			log.info "expression=$expression"
 			
 			if (expression[0] == '$') {
 
@@ -98,8 +102,6 @@ class BlogratTemplater {
 				if (expression[0] == '{') {
 					expression = expression[1..expression.size()-3]// remove the brackets
 				}
-
-				log.info "EXPERSSION = $expression"
 				
 				GroovyShell shell = new GroovyShell(new Binding(context));
 
@@ -142,7 +144,7 @@ class BlogratTemplater {
 			}
 			else {
 				processTags(loadTemplateFileText(templateName + ".html"), context) // note the recursive call here so that template tags inside templates loaded from
-																			   // tags are themselves processed
+																			   	   // tags are themselves processed
 			}
 
 		}

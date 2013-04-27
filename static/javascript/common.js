@@ -114,5 +114,5 @@ function loadLogin() {
 
 }
 $(document).ready(function() {
-	loadLogin()
+	//loadLogin()
 });

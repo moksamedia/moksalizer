@@ -1,24 +1,12 @@
 import java.util.List;
 
+test = false
+
 datastore {
-	
-	prod {
-	
 		databaseHost = 'localhost'
 		databasePort = 27017
 		dataObjectsPackage = 'com.moksamedia.moksalizer.data.objects'
 		databaseName = 'moksalizer'
-
-	}
-	test {
-		
-		databaseHost = 'localhost'
-		databasePort = 27017
-		dataObjectsPackage = 'com.moksamedia.moksalizer.data.objects'
-		databaseName = 'moksalizer_test'
-
-	}
-	
 }
 
 serverip = '50.116.24.233'
@@ -39,15 +27,32 @@ googledrive {
 
 }
 
-bloginfo {
+blogData {
 	
 	name = 'moksalizer'
-	description = 'a blograt blog - awesome!'
+	description = 'a moksalizer blog - awesome!'
 	
 	admin {
 		fullName = 'Andrew Hughes'
 		alias = 'cantgetnosleep'
 		email = 'andrewcarterhughes@gmail.com'
+	}
+}
+
+environments {
+	
+	local {
+		homeUrl = 'http://localhost:8080'
+		homeUrlSsl = 'https://localhost:8443'
+		templateRoot = 'src/main/resources/templates'
+		staticRoot = 'static'
+	}
+	
+	deployed {
+		homeUrl = 'http://www.moksamedia.com'
+		homeUrlSsl = 'https://www.moksamedia.com'
+		templateRoot = 'templates'
+		staticRoot = 'static'
 	}
 	
 }

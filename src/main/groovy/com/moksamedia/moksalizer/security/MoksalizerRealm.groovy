@@ -21,6 +21,16 @@ import org.apache.shiro.util.SimpleByteSource;
 
 import com.moksamedia.moksalizer.data.objects.User
 
+
+/**
+ * This is used to provide a hook for Shiro to store credentials in the Moksalizer mongodb
+ * database. doGetAuthorizationInfo() looks up role information (as well as some other
+ * options--see the api). doGetAuthenticationInfo() looks up the hashed password and
+ * password salt. I also added some non-override utility functions and properties, making
+ * this class more of a utility authentication and authorization class.
+ * @author cantgetnosleep
+ *
+ */
 @Slf4j
 class MoksalizerRealm extends AuthorizingRealm {
 
@@ -28,6 +38,12 @@ class MoksalizerRealm extends AuthorizingRealm {
 	public static final String HASH_NAME = Sha256Hash.ALGORITHM_NAME
 	public static final String REALM_NAME = 'moksalizer-login'
 		
+	/**
+	 * Given a password, returns a map with the salt and hashed password
+	 * as byte arrays.
+	 * @param password to be hashed with salt
+	 * @return
+	 */
 	public static def saltAndHashForPassword(String password) {
 		RandomNumberGenerator rng = new SecureRandomNumberGenerator()
 		ByteSource salt = rng.nextBytes()
@@ -35,15 +51,23 @@ class MoksalizerRealm extends AuthorizingRealm {
 		[salt:salt.getBytes(), hash:hash.getBytes()]
 	}
 
-		
+	/**
+	 * Is the current user an admin?
+	 */
 	public static Closure isAdmin = { request ->
 		SecurityUtils.getSubject().hasRole('admin')
 	}
 	
+	/**
+	 * Is the current user authenticated/logged in?
+	 */
 	public static Closure isAuthenticated = { request ->
 		SecurityUtils.getSubject().isAuthenticated()
 	}
 	
+	/**
+	 * Is the current user remembered (NOT the same as authenticated)?
+	 */
 	public static Closure isRemembered = { request ->
 		SecurityUtils.getSubject().isRemembered()
 	}

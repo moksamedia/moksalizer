@@ -1,51 +1,59 @@
 <web-app>
-<listener>
-    <listener-class>org.apache.shiro.web.env.EnvironmentLoaderListener</listener-class>
-</listener>
-<listener>
-    <listener-class>com.moksamedia.moksalizer.servlet.ServletInitializer</listener-class>
-</listener>
-<filter>
-    <filter-name>ShiroFilter</filter-name>
-    <filter-class>org.apache.shiro.web.servlet.ShiroFilter</filter-class>
-</filter>
-<filter-mapping>
-    <filter-name>ShiroFilter</filter-name>
-    <url-pattern>/*</url-pattern>
-    <dispatcher>REQUEST</dispatcher> 
-    <dispatcher>FORWARD</dispatcher> 
-    <dispatcher>INCLUDE</dispatcher> 
-    <dispatcher>ERROR</dispatcher>
-</filter-mapping>
-<filter>
-   <filter-name>Sanitize Stacktrace Filter</filter-name>
-   <filter-class>com.moksamedia.moksalizer.servlet.SanitizeStackTraceFilter</filter-class>
-</filter>
-<filter-mapping>
-   <filter-name>Sanitize Stacktrace Filter</filter-name>
-   <servlet-name>Moksalizer</servlet-name>
-</filter-mapping>
-<filter>
-   <filter-name>Serve Static Filter</filter-name>
-   <filter-class>com.moksamedia.moksalizer.servlet.ServeStaticFilter</filter-class>
-</filter>
-<filter-mapping>
-   <filter-name>Serve Static Filter</filter-name>
-   <servlet-name>Moksalizer</servlet-name>
-</filter-mapping>
-<servlet>
-	<servlet-name>Moksalizer</servlet-name>
-	<servlet-class>
-		com.sun.jersey.spi.container.servlet.ServletContainer
-	</servlet-class>
-	<init-param>
-		<param-name>com.sun.jersey.config.property.packages</param-name>
-		<param-value>com.moksamedia.moksalizer.rest</param-value>
-	</init-param>
-	<load-on-startup>1</load-on-startup>
-</servlet>
-<servlet-mapping>
-	<servlet-name>Moksalizer</servlet-name>
-	<url-pattern>/*</url-pattern>
-</servlet-mapping>
+	<listener>
+	    <listener-class>org.apache.shiro.web.env.EnvironmentLoaderListener</listener-class>
+	</listener>
+	<listener>
+	    <listener-class>com.moksamedia.moksalizer.servlet.ServletInitializer</listener-class>
+	</listener>
+	<filter>
+	   <filter-name>Performance Timer Filter</filter-name>
+	   <filter-class>com.moksamedia.moksalizer.servlet.PerformanceTimerFilter</filter-class>
+	</filter>
+	<filter-mapping>
+	   <filter-name>Performance Timer Filter</filter-name>
+	   <servlet-name>Moksalizer</servlet-name>
+	</filter-mapping>
+	<filter>
+	    <filter-name>ShiroFilter</filter-name>
+	    <filter-class>org.apache.shiro.web.servlet.ShiroFilter</filter-class>
+	</filter>
+	<filter-mapping>
+	    <filter-name>ShiroFilter</filter-name>
+	    <url-pattern>/*</url-pattern>
+	    <dispatcher>REQUEST</dispatcher> 
+	    <dispatcher>FORWARD</dispatcher> 
+	    <dispatcher>INCLUDE</dispatcher> 
+	    <dispatcher>ERROR</dispatcher>
+	</filter-mapping>
+	<filter>
+	   <filter-name>Sanitize Stacktrace Filter</filter-name>
+	   <filter-class>com.moksamedia.moksalizer.servlet.SanitizeStackTraceFilter</filter-class>
+	</filter>
+	<filter-mapping>
+	   <filter-name>Sanitize Stacktrace Filter</filter-name>
+	   <servlet-name>Moksalizer</servlet-name>
+	</filter-mapping>
+	<filter>
+	   <filter-name>Serve Static Filter</filter-name>
+	   <filter-class>com.moksamedia.moksalizer.servlet.ServeStaticFilter</filter-class>
+	</filter>
+	<filter-mapping>
+	   <filter-name>Serve Static Filter</filter-name>
+	   <servlet-name>Moksalizer</servlet-name>
+	</filter-mapping> 			
+	<servlet>
+		<servlet-name>Moksalizer</servlet-name>
+		<servlet-class>
+			com.sun.jersey.spi.container.servlet.ServletContainer
+		</servlet-class>
+		<init-param>
+			<param-name>com.sun.jersey.config.property.packages</param-name>
+			<param-value>com.moksamedia.moksalizer.rest</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Moksalizer</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
 </web-app>

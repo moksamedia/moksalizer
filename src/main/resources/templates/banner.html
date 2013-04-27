@@ -2,9 +2,9 @@
 	<div id="mainnav">
 	<ul class="main-nav-left">
 		<% if (!alreadyLoggedIn) { %>
-    		<li id="login"><a href="#login-box" class="login-window">Login</a></li>
+    		<li id="login"><a href="/login" class="login-window">Login</a></li>
     	<% } else {%>
-    		<li id="login"><a href="#logout" class="logout">Logout</a></li>
+    		<li id="login"><a href="/logout" class="logout">Logout</a></li>
     	<% } %>
     	<li><a href="${blogHomeURL}">HOME</a></li>
    	 	<li><a href="/contact" class="smcf-link">CONTACT</a></li>

@@ -6,14 +6,16 @@ import javax.servlet.ServletContext
 import javax.servlet.ServletContextEvent
 import javax.servlet.ServletContextListener
 
-import org.codehaus.groovy.runtime.StackTraceUtils
+import org.apache.shiro.web.env.MutableWebEnvironment
+import org.apache.shiro.web.env.WebEnvironment
+import org.apache.shiro.web.filter.authc.FormAuthenticationFilter
+import org.apache.shiro.web.filter.mgt.FilterChainManager
+import org.apache.shiro.web.filter.mgt.PathMatchingFilterChainResolver
+import org.apache.shiro.web.util.WebUtils
 
 import com.github.jmkgreen.morphia.logging.MorphiaLoggerFactory
 import com.github.jmkgreen.morphia.logging.slf4j.SLF4JLogrImplFactory
 import com.moksamedia.moksalizer.Controller
-import com.moksamedia.moksalizer.data.objects.BlogData
-import com.moksamedia.moksalizer.exception.MoksalizerException
-
 
 @Slf4j
 public class ServletInitializer implements ServletContextListener
@@ -21,25 +23,53 @@ public class ServletInitializer implements ServletContextListener
 	public void contextInitialized(ServletContextEvent sce)
 	{
 		log.info "INITIALIZING CONTEXT"
+		
+		/*
+		 * This was necessary to use SLF4J with Morphia to avoid some annoying
+		 * warning/errors on startup.
+		 */
 		MorphiaLoggerFactory.reset()
 		MorphiaLoggerFactory.registerLogger(SLF4JLogrImplFactory)
-		
-		Controller.onServerStart()
-					
+				
 		/*
-		BlogData blogData = BlogData.getOne()
+		 * Get the Controller going. Initializes DAO, which connects to mongo
+		 * database as well as injects data objects with access methods.
+		 */
+		Controller.onServerStart()
 		
-		if (blogData == null) {
-			log.error 'Unable to load BlogData object.'
-			throw new MoksalizerException('Unable to load BlogData object.')
+		/*
+		 * Get Shiro FilterChainManager so that filter chain can be
+		 * configured.
+		 */
+		ServletContext context = sce.getServletContext()		
+		WebEnvironment we = WebUtils.getWebEnvironment(context)
+		PathMatchingFilterChainResolver filterChainResolver = we.getFilterChainResolver()
+		
+		// If there's no [urls] section in the shiro.ini, then the filterChainResolver
+		// will not have been created, so need to create it.
+		if (filterChainResolver == null) {
+			filterChainResolver = new PathMatchingFilterChainResolver()
+			((MutableWebEnvironment)we).setFilterChainResolver(filterChainResolver)
 		}
-		else {
-			ServletContext context = sce.getServletContext()
-			Map blogDataContext = blogData.getContext()
-			log.info "blogDataContext = ${blogDataContext.toMapString()}"
-			context.setAttribute(Controller.BLOGDATA_KEY, blogData.getContext())
-		}
-		*/
+		
+		// the FilterChainManager
+		FilterChainManager filterChainManager = filterChainResolver.getFilterChainManager()
+		
+		assert filterChainManager != null
+		
+		// LOGIN
+		filterChainManager.addToChain('/login', 'ssl', '8443')
+		filterChainManager.addToChain('/login', 'authc')
+		
+		// LOGOUT
+		filterChainManager.addToChain('/logout', 'logout')
+		
+		def filters = filterChainManager.getFilters()
+		
+		FormAuthenticationFilter authc = filters['authc']
+		
+		authc.setLoginUrl('/login')
+				
 		
 	}
 
@@ -48,6 +78,7 @@ public class ServletInitializer implements ServletContextListener
 	{
 		log.info "CLOSING CONTEXT"
 		Controller.onServerStop()
+		ServeStaticFile.nullCache()
 	}
 
 }

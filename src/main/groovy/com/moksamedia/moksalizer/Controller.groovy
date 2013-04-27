@@ -37,31 +37,52 @@ class Controller {
 	GoogleDriveController googleDriveController
 
 	BlogData blogData
+	ConfigObject config
 	
 	public boolean isTest = false
 
-	def config
 
 	public boolean isDeployed = false
 	public boolean resetOnLoad = false
 	
 	public Controller() {
 				
+		setIsDeployed()
+		
+		setResetOnLoad()
+
 		URL urlToConfig  = Controller.classLoader.getResource('config.groovy')
 
 		assert urlToConfig != null
+		
+		String env = isDeployed ? "deployed" : "local"
 
-		config = new ConfigSlurper().parse(urlToConfig)
+		// TODO: add check for test as well
+		
+		config = new ConfigSlurper(env).parse(urlToConfig)
 
-		verifyConfig()
+		//verifyConfig()
+		
+		if (config.test) {
+			log.info "USING TEST CONFIG"
+			isTest = true
+			File file = new File('src/main/resources/config.groovy')
+			assert file.exists()
+			
+			// get the non-test config
+			ConfigObject mainConfig = new ConfigSlurper(env).parse(file.toURI().toURL())
+			
+			// merge it with the test config, allowing the test config to override
+			config = mainConfig.merge(config)
+			
+			resetOnLoad = true
+		}
 		
 		log.info "CONFIG=" + config.toString()
 		
-		setIsDeployed()
-		
-		setResetOnLoad()		
-		
-		configureShiroFilters()
+		log.info "TEMPLATE ROOT = ${config.templateRoot}"
+				
+		//configureShiroFilters()
 		
 		//configureSecurity()
 		
@@ -158,24 +179,11 @@ class Controller {
 	// Creates the dao controller, loads the bootstrap, and sets the blog data object. 
 	public init(def params = [:]) {
 		
-		String dataObjectsPackage
-		String databaseName
-		String databaseHost
-		int databasePort
-				
-		ConfigObject envConfig = (params?.test == true) ? config.datastore.test : config.datastore.prod
-		
-		dataObjectsPackage = envConfig.dataObjectsPackage
-		databaseName = envConfig.databaseName
-		databaseHost = envConfig.containsKey('databaseHost') ? envConfig.databaseHost : null
-		databasePort = envConfig.containsKey('databasePort') ? envConfig.databasePort : null
-
-		
 		log.info "Creating DAO"
-		daoMongo = new MongoMorphiaDAO(dataObjectsPackage:dataObjectsPackage,
-									   databaseName:databaseName,
-									   databaseHost:databaseHost,
-									   databasePort:databasePort)
+		daoMongo = new MongoMorphiaDAO(dataObjectsPackage:config.datastore.dataObjectsPackage,
+									   databaseName:config.datastore.databaseName,
+									   databaseHost:config.datastore.databaseHost,
+									   databasePort:config.datastore.databasePort)
 		
 		log.info "Loading Bootstrap"
 		loadBootstrap()
@@ -183,9 +191,10 @@ class Controller {
 		log.info "Loading BlogData object"
 		blogData = BlogData.getOne()
 		assert blogData != null
-		
+				
 	}
 	
+	//TODO: update
 	public void verifyConfig() {
 		
 		// datastore
@@ -219,7 +228,7 @@ class Controller {
 		def engine = new GroovyScriptEngine(new ClassLoaderResourceConnector(this.class))
 
 		// Create a binding of any variables we want to pass to the script
-		def binding = [controller:this, reset:resetOnLoad, deployed:isDeployed, test:isTest] as Binding
+		def binding = [controller:this, reset:resetOnLoad, config:config] as Binding
 
 		// Run the script
 		def obj = engine.run('/bootstrap.groovy', binding)

@@ -2,7 +2,7 @@
 	<div id="wordcloud">
 	<div id="tags-label">Tags</div>
 	<% tags.each { tag -> %>
-		<div><a class="tag-link" href="${blogHomeURL}/tag/${tag.nameComputerFriendly}">${tag.name} - ${tag.postCount()}</a></div>
+		<div><a class="tag-link" href="/tag/${tag.slug}">${tag.name} - ${tag.postCount}</a></div>
 	<% } %>
 	</div>
 
@@ -22,12 +22,12 @@
 					</div>
 					<% if (admin) { %>
 					<div class="post-admin">
-						<a class="post-edit post-admin-inline" href="${blogHomeURL}/editpost?id=${post._id}&source=summary">(Edit)</a>
-						<a class="post-delete post-admin-inline" href="${blogHomeURL}/deletepost?id=${post._id}&source=summary">(Delete)</a>
+						<a class="post-edit post-admin-inline" href="${blogHomeURL}/editpost?id=${post.id}&source=summary">(Edit)</a>
+						<a class="post-delete post-admin-inline" href="${blogHomeURL}/deletepost?id=${post.id}&source=summary">(Delete)</a>
 						<% if (post.publish) { %>
-							<a class="post-hide post-admin-inline" href="${blogHomeURL}/hidepost?id=${post._id}&source=summary">(Hide)</a>
+							<a class="post-hide post-admin-inline" href="${blogHomeURL}/hidepost?id=${post.id}&source=summary">(Hide)</a>
 						<% } else { %>
-							<a class="post-publish post-admin-inline" href="${blogHomeURL}/publishpost?id=${post._id}&source=summary">(Publish)</a>
+							<a class="post-publish post-admin-inline" href="${blogHomeURL}/publishpost?id=${post.id}&source=summary">(Publish)</a>
 						<% } %>						
 					</div>
 					<% } %>

@@ -46,6 +46,9 @@ buildscript {
 
 repositories {
 	mavenCentral()
+	maven {
+		url "http://bits.netbeans.org/maven2"
+	}
 }
 	
 dependencies {
@@ -71,6 +74,9 @@ dependencies {
 	/* JERSEY */
 	compile 'com.sun.jersey:jersey-bundle:1.17'
 	
+	/* JERSEY GUICE - DEPENDENCY INJECTION */
+	compile 'com.sun.jersey.contribs:jersey-guice:1.17'
+	
 	/* MONGO JAVA DRIVER */
 	compile 'org.mongodb:mongo-java-driver:2.10.1'
 	
@@ -89,16 +95,11 @@ dependencies {
 	
 	/* APACHE SHIRO - SECURITY */
 	compile 'org.apache.shiro:shiro-all:1.2.1'
+	
+	/* NETBEANS LOOKUP API - PLUGINS */
+	compile 'org.netbeans.api:org-openide-util-lookup:latest.release'
+	
 }
-
-project.sourceSets {
-	web {
-	  resources {
-		srcDir 'src/web/templates'
-	  }
-	}
-}
-
 keystore = file('src/main/resources/jetty-ssl.keystore').getAbsolutePath()
 
 [jettyRun, jettyRunWar]*.configure {

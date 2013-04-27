@@ -7,7 +7,9 @@ import com.github.jmkgreen.morphia.Morphia
 import com.github.jmkgreen.morphia.mapping.MappingException
 import com.github.jmkgreen.morphia.query.Query
 import com.github.jmkgreen.morphia.utils.ReflectionUtils
-import com.mongodb.Mongo
+import com.moksamedia.moksalizer.data.objects.Role
+import com.moksamedia.moksalizer.data.objects.User
+import com.moksamedia.moksalizer.exception.MoksalizerException
 import com.mongodb.MongoClient
 
 
@@ -16,6 +18,7 @@ class MongoMorphiaDAO {
 
 	MongoClient mongo
 	Datastore ds	
+	Morphia morphia
 	
 	/*
 	 * Should not know anything about test or credential datastores. This is
@@ -45,12 +48,15 @@ class MongoMorphiaDAO {
 		mongo = new MongoClient(params.databaseHost, params.databasePort)
 			
 		// Create Morphia instance
-		Morphia morphia = new Morphia()
+		morphia = new Morphia()
+		
+		//Role.metaClass.people = [] as List<User>
 		
 		// Map and inject all Entity and Embedded classes
 		mapPackage(params.dataObjectsPackage, morphia)
 				
 		// Create datastore
+		log.info "Creating datastore for database: ${params.databaseName}"
 		ds = morphia.createDatastore(mongo, params.databaseName)		
 				
 		// Inject some convenience methods
@@ -214,7 +220,7 @@ class MongoMorphiaDAO {
 			Query query = ds.createQuery(clazz)
 			
 			def keys = prm.keySet()
-			
+						
 			prm.each { k, v ->
 				
 				if (k == 'search') {
@@ -225,30 +231,42 @@ class MongoMorphiaDAO {
 					assert v instanceof String
 					query.order(v)
 				}
-				else if (k == 'only') {
+				else if (k == 'withOnly') {
 					assert v instanceof String || v instanceof List
 					assert !keys.contains('withoutFields')
-					query.retrievedFields(true, v)
+					query.retrievedFields(true, v as String[])
 				}
 				else if (k == 'without') {
 					assert v instanceof String || v instanceof List
 					assert !keys.contains('onlyFields')
-					query.retrievedFields(false, v)
-				}
-				else if (k == 'batchSize') {
-					assert v instanceof Integer && v > 0
-					assert keys.contains('batchNum') || keys.contains('batchNumber')
-					query.limit(v)
-				}
-				else if (k == 'batchNum' || k == 'batchNumber') {
-					assert v instanceof Integer && v >= 0
-					assert keys.contains('batchSize')
-					query.limit(v)
+					query.retrievedFields(false, v as String[])
 				}
 				else if (k == 'limit') {
 					assert v instanceof Integer && v > 0
 					query.limit(v)
 				}
+				
+			}
+			/*
+			 * Deal with batches. batchSize AND batchNum (or batchNumber) must be defined
+			 * for a batch. Will throw an error if one is defined without the other.
+			 */
+			if (prm.containsKey('batchSize') || prm.containsKey('batchNum') || prm.containsKey('batchNumber')) {
+				
+				int batchNum, batchSize
+				
+				if (!(prm.containsKey('batchSize') && (prm.containsKey('batchNum') || prm.containsKey('batchNumber')))) {
+					throw new MoksalizerException("When creating batches, BOTH batchSize and batchNum must be specified.")	
+				}
+				
+				batchSize = prm.batchSize
+				batchNum = prm.containsKey('batchNum') ? prm.batchNum : prm.batchNumber
+				
+				assert batchSize instanceof Integer && batchSize > 0
+				assert batchNum instanceof Integer && batchNum >= 0
+				
+				query.limit(batchSize)
+				query.offset(batchNum * batchSize)
 				
 			}
 			

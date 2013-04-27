@@ -5,9 +5,7 @@ import groovy.util.logging.Slf4j
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.ws.rs.DefaultValue
-import javax.ws.rs.FormParam
 import javax.ws.rs.GET
-import javax.ws.rs.POST
 import javax.ws.rs.Path
 import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
@@ -17,10 +15,8 @@ import javax.ws.rs.core.Context
 import javax.ws.rs.core.UriInfo
 
 import org.apache.shiro.SecurityUtils
-import org.apache.shiro.authc.AuthenticationException
-import org.apache.shiro.authc.UsernamePasswordToken
 
-import com.moksamedia.moksalizer.BlogratTemplater
+import com.moksamedia.moksalizer.MoksalizerTemplater
 import com.moksamedia.moksalizer.Controller
 import com.moksamedia.moksalizer.PageContext
 import com.moksamedia.moksalizer.ShiroFilter
@@ -38,8 +34,12 @@ public class Root {
 	@Context HttpServletResponse response
 	@Context HttpServletRequest request
 	@Context UriInfo uri
+	
+	// these are READ ONLY bc of thread safety issues
+	final Map blogData = Controller.instance.blogData.getContext()
+	final ConfigObject config = Controller.instance.config
 		
-	public final Map cssCtx = ([
+	final Map cssCtx = ([
 			contentWidth:800
 		]).asImmutable()
 		
@@ -57,17 +57,16 @@ public class Root {
 	 * state in the BlogratTemplater class.
 	 */
 	Closure render = { String template, def context ->
-		BlogratTemplater templater = new BlogratTemplater()
+		MoksalizerTemplater templater = new MoksalizerTemplater()
 		if (context instanceof PageContext) context = context.ctx
 		templater.render(template, context)
 	}
-	
 
 	Closure stripLeadingSlash = { String str ->
 		if (str == null || str == "") return str
 		(str[0] == '/') ? str[1..-1] : str
 	}
-	
+		
 	@GET
 	@Produces('text/css')
 	@Path(/{filename: \S+\.gcss$}/) // *.gcss
@@ -90,7 +89,7 @@ public class Root {
 		def context = new PageContext([
 			posts:posts, 
 			body:'listajax', 
-			windowTitle:PageContext.blogCtx.blogName,
+			windowTitle:blogData['blogName'],
 			passToPage:[ajaxloadtype:'post']
 			])
 				
@@ -114,21 +113,19 @@ public class Root {
 								 @QueryParam('ajaxloadtype') @DefaultValue('') String ajaxloadtype,
 								 @QueryParam('id') @DefaultValue('') String id) {
 		
-		
-						  
 		def search = [type:"post", publish:true]
 		
 		// posts for a specific tag
 		if (ajaxloadtype == 'tag') { // start at one bc '/tag/verse' is split to ['','tag','verse']
 			Tag tag = Tag.getOne()
 			assert tag != null
-			search += ["tags":tag._id]
+			search += ["tags.id":tag.id]
 		}
 		// posts for a category
 		else if (ajaxloadtype == 'category') {
 			Category category = Category.getOne()
-			assert tag != null
-			search += ["categories":tag._id]
+			assert category != null
+			search += ["categories.id":category.id]
 		}
 		else if (ajaxloadtype != 'post'){
 			log.error "ajaxloadtype unexpected value: $ajaxloadtype"
@@ -210,6 +207,10 @@ public class Root {
 		posts
 	}
 
+	/*
+	 * The authc shiro filter takes care of the actual login by intercepting a POST
+	 * to /login, and retrieving the username, password, and rememberme form values.
+	 */
 	@GET
 	@Produces('text/html')
 	@Path('login')
@@ -223,39 +224,75 @@ public class Root {
 		
 	}
 
-	@POST
-	@Produces('text/html')	
-	@Path('login-ajax')
-	public String loginajax(@FormParam('username') String username,
-							@FormParam('password') String password) {
-	
-		if (username == null || username.trim() == '') {
-			throw new AuthenticationException("Username null or empty.")
-		}					
-		
-		if (password == null || password.trim() == '') {
-			throw new AuthenticationException("Password null or empty.")
-		}					
-	
-		log.info "$username, $password"
-		UsernamePasswordToken token = new UsernamePasswordToken(username, password)
-		token.setRememberMe(true)
-		try {
-			SecurityUtils.getSubject().login(token)
-		}
-		catch (AuthenticationException ex) {
-			log.info "Unable to authenticate"
-			throw new WebApplicationException(403)
-		}
-		log.info "Authenticated: $username"
-		response.status = HttpServletResponse.SC_OK
-		"SUCCESS"
-	}
-
+	/*
+	 * This should actually never get reached bc the authc filter catches
+	 * the logout and does it automatically.
+	 */
 	@Path('logout')
 	public String logout() {
 		SecurityUtils.getSubject().logout()
 		response.sendRedirect(uri.getBaseUri())
+	}
+	
+	@GET
+	@Produces('text/html')
+	@Path("/tag/{tagslug}")
+	public String getTag(@PathParam('tagslug') String tagslug,
+						 @QueryParam('batchnum') @DefaultValue('0') int batchNum, 
+						 @QueryParam('batchsize') @DefaultValue('10') int batchSize) {
+		
+		Tag tag = Tag.getOne(slug:tagslug)
+
+		if (tag == null) {
+			log.error "tag: $tagslug not found"
+			throw new WebApplicationException(HttpServletResponse.SC_NOT_FOUND)
+		}
+			
+		def posts = Post.find(
+			search		: [type:'post', publish:true, 'tags.id':tag.id],
+			sort		: '-dateCreated',
+			batchSize	: batchSize,
+			batchNumber	: batchNum)
+		
+		
+		def subTitle = render('pagesubtitle.html', [subTitle:"Tag: ${tag.name}"])
+		
+		def context = new PageContext([
+			posts:posts,
+			subTitle:subTitle,
+			body:'listajax',
+			windowTitle:blogData.blogName,
+			passToPage:[ajaxloadtype:'tag']
+			])
+
+		render('shell.html', context)
+
+	}
+						 
+						 
+	@GET
+	@Produces('text/html')
+	@Path('/summary')
+	public String getSummary() {
+		
+		def posts = Post.find(
+			search		: (MoksalizerRealm.isAdmin() ? [type:'post'] : [type:"post", publish:true]),
+			sort		: '-dateCreated',
+			withOnly	: ['title', 'datePublished', 'sequenceNumber', 'publish'])
+		
+		def tags = Tag.getAll()
+		
+		String windowTitle = blogData.blogName + ' - Summary'
+		
+		def context = new PageContext([
+			posts:posts,
+			tags:tags,
+			windowTitle:windowTitle,
+			body:'summary'
+			])
+		
+		render('shell.html', context)
+
 	}
 
 

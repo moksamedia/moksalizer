@@ -50,20 +50,10 @@ else {
 
 BlogData.dropCollection()
 BlogData blogData = new BlogData()
-blogData.admin = admin
-blogData.description = "Andrew's awesome blog."
-blogData.name = "The path is..."
-
-if (deployed) {
-	blogData.homeUrl = 'http://www.moksamedia.com'
-	blogData.homeUrlSsl = 'https://www.moksamedia.com'
-	
-}
-else {
-	blogData.homeUrl = 'http://localhost:8080'
-	blogData.homeUrlSsl = 'https://localhost:8443'
-	
-}
+blogData.description = config.blogData.description
+blogData.name = config.blogData.name
+blogData.homeUrl = config.blogData.homeUrl
+blogData.homeUrlSsl = config.blogData.homeUrlSsl
 
 blogData.save()
 

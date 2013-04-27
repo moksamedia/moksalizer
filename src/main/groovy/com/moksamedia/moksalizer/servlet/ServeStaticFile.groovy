@@ -12,55 +12,71 @@ import javax.ws.rs.core.Response;
 @Slf4j
 class ServeStaticFile {
 	
+	private static volatile Map cache = [:]
+	
 	MimetypesFileTypeMap mimetypesFileTypeMap = new MimetypesFileTypeMap()
 	
+	public static void clearCache() {
+		cache = [:]
+	}
+	
+	public static void nullCache() {
+		cache = null
+	}
+	
 	public void serveStatic(String path, HttpServletResponse response) {
+
+		File file = staticFileFrom(path)
 		
-		if (!staticFileExists(path)) {
-			//log.info "Static file does not exist at $path"
+		if (file == null) {
 			response.status = HttpServletResponse.SC_NOT_FOUND
+			return
 		}
-		else {
-
-			//log.info "Serving static file: $path"
-			def output = serveStaticFile(path,response)
-
-			output = convertOutputToByteArray(output)
-
-			def contentLength = output.length
-			response.setHeader('Content-Length', contentLength.toString())
-
-			def stream = response.getOutputStream()
-			stream.write(output)
-			stream.flush()
-			stream.close()
-		}
-
-	}
-
-	private boolean staticFileExists(String path) {
-		!path.endsWith('/') && staticFileFrom(path) != null
-	}
-
-	private def serveStaticFile(String path, HttpServletResponse response) {
-		URL url = staticFileFrom(path)
-		String contentType = mimetypesFileTypeMap.getContentType(url.toString())
-		//log.info "Content-Type = $contentType"
-		response.setHeader('Content-Type', contentType)
-		url.openStream().bytes
-	}
-
-	private URL staticFileFrom(path) {
 		
+		def output
+		
+		// CACHED
+		if (cache.containsKey((path)) && file.lastModified() == cache[(path)].lastModified) {
+			output = cache[(path)].output
+			//log.info "Loading cached $path"
+		}
+		
+		// NOT CACHED
+		else {
+			output = serveStaticFile(file,response)
+			output = convertOutputToByteArray(output)
+			cache[(path)] = [output:output, lastModified:file.lastModified()]
+		}
+		
+
+		def contentLength = output.length
+		//log.info "SERVING STATIC: ${file.toString()}:${contentLength.toString()}"
+		response.setHeader('Content-Length', contentLength.toString())
+
+		def stream = response.getOutputStream()
+		stream.write(output)
+		stream.flush()
+		stream.close()
+
+
+	}
+
+	private def serveStaticFile(File file, HttpServletResponse response) {
+		String contentType = mimetypesFileTypeMap.getContentType(file)
+		response.setHeader('Content-Type', contentType)
+		file.bytes
+	}
+
+	/**
+	 * If the file exists and it's a file, not a directory, it's converted to a URL
+	 * and returned.
+	 */
+	private File staticFileFrom(String path) {
+				
 		def file = new File(path)
 		
-		if (file.exists()) {
-			file.toURI().toURL()
-		}
-		else {
-			null
-		}
-		
+		(file.exists() && file.isFile()) ? file : null
+						
 		// TODO: integrate ServletContext.getResouce() as well as classloader searching
 		/*
 		try {
@@ -70,6 +86,7 @@ class ServeStaticFile {
 		}
 		*/
 	}
+	
 	
 	private byte[] convertOutputToByteArray(output) {
 		if(output instanceof String)

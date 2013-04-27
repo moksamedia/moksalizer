@@ -15,22 +15,15 @@ class BlogData {
 	String description = "A blograt blog..."
 	String homeUrl = 'http://localhost:8080'
 	String homeUrlSsl = 'https://localhost:8443'
-	
-	@Reference
-	User admin
-		
+			
 	// values passed into servlet pages as they are rendered
-	public def getImmutableContext() {
-		
-		def context = [
+	public def getContext() {
+		[
 			blogName: name,
 			blogDescription:description,
 			blogHomeUrl: homeUrl,
-			blogHomeUrlSsl: homeUrlSsl,
-			admin:admin
-			]
-				
-		context.asImmutable()
+			blogHomeUrlSsl: homeUrlSsl
+		]
 	}
 	
 }

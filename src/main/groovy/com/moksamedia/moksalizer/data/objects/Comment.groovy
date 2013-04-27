@@ -6,6 +6,7 @@ import com.github.jmkgreen.morphia.annotations.Id
 import com.github.jmkgreen.morphia.annotations.Embedded
 import com.moksamedia.moksalizer.Utility
 
+
 @Embedded
 class Comment {
 	

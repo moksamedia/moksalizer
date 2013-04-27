@@ -12,9 +12,17 @@ import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
 
+import com.moksamedia.moksalizer.Controller
+
+
 @Slf4j
+@Singleton
 class ServeStaticFilter implements Filter {
 
+	public ServeStaticFilter() {
+		
+	}
+	
 	public static final Set staticTypes = [
 			'txt',
 			'css',
@@ -23,13 +31,7 @@ class ServeStaticFilter implements Filter {
 			'html',
 			'js'
 		]
-	
-	public static String URL_PATH = 'static'
-	public static String FILE_SYSTEM_PATH = 'static'
-	
-	public Pattern urlPathPattern
-	public absolutePathOfStaticFiles
-	
+		
 	Closure isStatic = { String file ->
 				
 		assert file != null
@@ -48,8 +50,6 @@ class ServeStaticFilter implements Filter {
 	
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
-		urlPathPattern = Pattern.compile(/^\/${URL_PATH}/) // = '/static' at the beginning, or '^/static' in regex	
-		absolutePathOfStaticFiles = new File(FILE_SYSTEM_PATH).getAbsolutePath()
 	}
 	
 	@Override
@@ -60,29 +60,31 @@ class ServeStaticFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 		
+			/*
+			 * Note: This was .getPathInfo(), but with Guice I had to change it to
+			 * getServletPath()
+			 */
 			String path = ((HttpServletRequest)request).getPathInfo()
 			
-			log.info "Context Path = " + path
-						
-			if (isStatic(path)) {
+			//log.info "getServletPath() = " + path
+			//log.info "getRequestURI() = " + request.getRequestURI()
+			//log.info "getPathInfo() = " + request.getPathInfo()
 			
-				//def filePath = path.replaceFirst(urlPathPattern, absolutePathOfStaticFiles)
-				
+			if (isStatic(path)) {
+							
 				def filePath
 				
+				// get the root template directory from the config file
+				def filePathPrefix = Controller.instance.config.staticRoot
+				
 				if (path[0] == '/') {
-					filePath = FILE_SYSTEM_PATH + path
+					filePath = filePathPrefix + path
 				}
 				else {
-					filePath = FILE_SYSTEM_PATH + '/' + path
+					filePath = filePathPrefix + '/' + path
 				}
-				
-				
-				//log.info "File Path = " + filePath
-				
-				ServeStaticFile serveStaticFile = new ServeStaticFile()
-				
-				serveStaticFile.serveStatic(filePath, response)
+								
+				new ServeStaticFile().serveStatic(filePath, response)
 				
 			}
 			else {
