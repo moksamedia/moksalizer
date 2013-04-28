@@ -11,6 +11,8 @@ datastore {
 
 serverip = '50.116.24.233'
 
+pluginPackages = 'com.moksamedia.moksalizer.plugin'
+
 googledrive {
 
 	/*
@@ -44,8 +46,8 @@ environments {
 	local {
 		homeUrl = 'http://localhost:8080'
 		homeUrlSsl = 'https://localhost:8443'
-		templateRoot = 'src/main/resources/templates'
-		staticRoot = 'static'
+		templateRoot = 'src/main/webapp/templates'
+		staticRoot = 'src/main/webapp/static'
 	}
 	
 	deployed {

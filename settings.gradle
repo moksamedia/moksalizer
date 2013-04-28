@@ -1,0 +1,15 @@
+
+/*
+ * Here we iterate over the directories found in the root directory of the
+ * main project, and if the subdirectory contains a build.gradle file, it
+ * is added to the main project as a subproject.
+ */
+Closure discoverSubprojects = {
+	def list = []
+	rootDir.eachDir(){ dir ->
+		dir.eachFileMatch({it == 'build.gradle'}, { list += [dir.name] })
+	}
+	list.toArray(new java.lang.String[0])
+}
+
+include discoverSubprojects()

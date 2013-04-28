@@ -1,0 +1,73 @@
+apply plugin: 'groovy'
+apply plugin: 'eclipse'
+
+ext.plugin = true
+ext.pluginClassName = 'TestPlugin'
+ext.pluginName = 'Test Plugin'
+
+// PROJECT VERSION & GROUP
+project.version = 0.1
+project.group = 'com.moksamedia.moksalizer.plugin'
+
+// CAPTURE STANDARD OUTPUT
+logging.captureStandardOutput(LogLevel.ERROR)
+
+repositories {
+	mavenCentral()
+	maven {
+		url 'http://bits.netbeans.org/maven2'
+	}
+}
+	
+dependencies {
+		
+	/* JUNIT */
+	testCompile 'junit:junit:4.10'
+	
+	/* LOGGING */
+	compile 'org.slf4j:slf4j-api:1.7.4',
+			'ch.qos.logback:logback-classic:1.0.1'  // Logback
+	
+	/* GROOVY */
+	groovy 'org.codehaus.groovy:groovy-all:1.8.+'
+	
+	compile project(':plugin-api')
+	
+}
+
+task "create-dirs" {
+
+	description = 'Creates src/main/webapp and src/main/webapp/WEB-INF'
+
+	Closure createDirs = {
+	    println it.toString()
+	    it.mkdirs()
+	}
+
+	doLast {
+		// basic source folders
+		project.sourceSets*.java.srcDirs*.each createDirs
+		project.sourceSets*.resources.srcDirs*.each createDirs
+		project.sourceSets*.groovy.srcDirs*.each createDirs
+		
+		// webapp folders
+    	createDirs new File('src/main/webapp')
+    	createDirs new File('src/main/webapp/templates')
+    	createDirs new File('src/main/webapp/static')
+
+		// for service descriptor file		
+		createDirs new File('src/main/resources/META-INF')
+		createDirs new File('src/main/resources/META-INF/services')
+	}
+
+}
+
+/*
+ task 'create-service-file' << {
+	 File file = new File('src/main/resources/META-INF/services/com.moksamedia.moksalizer.plugin.MKPluginAbstract')
+	 file.write("${project.group}.${pluginClassName}")
+ }
+ 
+ build.dependsOn 'create-service-file'
+ */
+ 

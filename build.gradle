@@ -20,7 +20,8 @@ apply plugin: 'eclipse'
 apply plugin: 'war'
 apply plugin: 'jetty'
 
-//apply plugin: 'jetty'
+apply from: './config-eclipse.gradle'
+apply from: './check-mongo.gradle'
 
 // PROJECT VERSION & GROUP
 project.version = 0.1
@@ -96,15 +97,16 @@ dependencies {
 	/* APACHE SHIRO - SECURITY */
 	compile 'org.apache.shiro:shiro-all:1.2.1'
 	
-	/* NETBEANS LOOKUP API - PLUGINS */
-	compile 'org.netbeans.api:org-openide-util-lookup:latest.release'
+	compile project(':plugin-api')
 	
+	//runtime project(':plugin-test')
+		
 }
-keystore = file('src/main/resources/jetty-ssl.keystore').getAbsolutePath()
+
+ext.keystore = file('src/main/resources/jetty-ssl.keystore').getAbsolutePath()
 
 [jettyRun, jettyRunWar]*.configure {
-	webAppSourceDirectory = file('static')
-	contextPath = '/'
+	contextPath = ''
 	jettyConfig= file('jetty-web.xml')
 }
 
@@ -112,6 +114,61 @@ war {
 	webXml = file('web.xml')
 	//classpath configurations.compile
 }
+
+/*
+ * Automatically triggers subprojects' eclipse task when
+ * eclipse task is run on root project
+ */
+tasks.eclipse.dependsOn{
+	subprojects { Project subproj ->
+		subproj.tasks.eclipse
+	}
+}
+
+/*
+ * Automatically adds a runtime dependency for root project for
+ * all subprojects that have the ext.plugin property defined. Thus
+ * can comment this out to not include the plugin.
+ */
+subprojects {
+	afterEvaluate { Project subproj ->
+		if (subproj.hasProperty('plugin')) {
+			rootProject.dependencies { runtime subproj }
+		}
+	}
+}
+
+/*
+ * Only run tests, jettyRun, and jettyRunWar if mongo db is running.
+ */
+test.onlyIf { mongoOK }
+tasks.jettyRun.dependsOn requireMongo
+tasks.jettyRunWar.dependsOn requireMongo
+
+
+
+/*
+ * Copies plugin jars from plugin subproject lib directories to
+ * plugin-lib subdirectory of root project.
+ *
+ * May not be needed.
+ */
+/*
+build << {
+	delete "plugin-lib/*.jar"
+	subprojects { subproj ->
+		if (subproj.hasProperty('plugin')) {
+			copy {
+				println "Copying plugin jar from ${subproj.libsDir}"
+				from(subproj.libsDir) {
+					include subproj.jar.archiveName
+				}
+				into "${rootDir}/plugin-lib"
+			}
+		}
+	}
+}
+*/
 
 /*
 jar {

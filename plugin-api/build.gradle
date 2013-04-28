@@ -1,0 +1,33 @@
+apply plugin: 'groovy'
+apply plugin: 'eclipse'
+
+// PROJECT VERSION & GROUP
+project.version = 0.1
+project.group = 'com.moksamedia.moksalizer.plugin'
+
+// CAPTURE STANDARD OUTPUT
+logging.captureStandardOutput(LogLevel.ERROR)
+
+repositories {
+	mavenCentral()
+	maven { 
+		url 'http://bits.netbeans.org/maven2' 
+	}
+}
+	
+dependencies {
+		
+	/* JUNIT */
+	testCompile 'junit:junit:4.10'
+	
+	/* LOGGING */
+	compile 'org.slf4j:slf4j-api:1.7.4',
+			'ch.qos.logback:logback-classic:1.0.1'  // Logback
+	
+	/* GROOVY */
+	groovy 'org.codehaus.groovy:groovy-all:1.8.+'
+	
+	/* NET BEANS LOOKUP */
+	compile 'org.netbeans.api:org-openide-util-lookup:+'
+	
+}

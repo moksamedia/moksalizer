@@ -21,6 +21,8 @@ import com.moksamedia.moksalizer.data.objects.Seq
 import com.moksamedia.moksalizer.data.objects.Tag
 import com.moksamedia.moksalizer.exception.MoksalizerException
 import com.moksamedia.moksalizer.googledrive.GoogleDriveController
+import com.moksamedia.moksalizer.plugin.MKPlugin
+import com.moksamedia.moksalizer.plugin.MKPluginService
 import com.moksamedia.moksalizer.security.MoksalizerRealm
 
 
@@ -38,6 +40,8 @@ class Controller {
 
 	BlogData blogData
 	ConfigObject config
+	
+	Set plugins = []
 	
 	public boolean isTest = false
 
@@ -81,13 +85,31 @@ class Controller {
 		log.info "CONFIG=" + config.toString()
 		
 		log.info "TEMPLATE ROOT = ${config.templateRoot}"
-				
+						
 		//configureShiroFilters()
 		
 		//configureSecurity()
 		
 		//googleDriveController = new GoogleDriveController(config.googledrive)
 
+	}
+	
+	private void loadPluginsFromPackage(String packageName) {
+		
+		log.info "Loading plugins from package: $packageName"		
+		
+		def classes = ReflectionUtils.getClasses(packageName)
+		
+		classes?.each { Class clazz ->
+			def pluginAnno = ReflectionUtils.getAnnotation(clazz, MKPlugin)
+			if (pluginAnno != null) {
+				plugins += [clazz]
+				log.info "---Found plugin: ${clazz.simpleName}"
+			}	
+		}
+		
+		MKPluginService serv = MKPluginService.instance
+		
 	}
 	
 	private void configureShiroFilters() {
@@ -191,7 +213,12 @@ class Controller {
 		log.info "Loading BlogData object"
 		blogData = BlogData.getOne()
 		assert blogData != null
-				
+		
+		log.info "Loading Plugins"		
+		config.pluginPackages.split('[;,]').each {
+			loadPluginsFromPackage(it.trim())
+		}
+		
 	}
 	
 	//TODO: update
