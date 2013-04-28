@@ -55,7 +55,7 @@ class Controller {
 		
 		setResetOnLoad()
 
-		URL urlToConfig  = Controller.classLoader.getResource('config.groovy')
+		URL urlToConfig  = Controller.classLoader.getResource('config')
 
 		assert urlToConfig != null
 		
@@ -70,7 +70,7 @@ class Controller {
 		if (config.test) {
 			log.info "USING TEST CONFIG"
 			isTest = true
-			File file = new File('src/main/resources/config.groovy')
+			File file = new File('src/main/resources/config')
 			assert file.exists()
 			
 			// get the non-test config

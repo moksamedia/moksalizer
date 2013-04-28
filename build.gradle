@@ -20,7 +20,7 @@ apply plugin: 'eclipse'
 apply plugin: 'war'
 apply plugin: 'jetty'
 
-apply from: './config-eclipse.gradle'
+//apply from: './config-eclipse.gradle'
 apply from: './check-mongo.gradle'
 
 // PROJECT VERSION & GROUP
@@ -113,16 +113,6 @@ ext.keystore = file('src/main/resources/jetty-ssl.keystore').getAbsolutePath()
 war {
 	webXml = file('web.xml')
 	//classpath configurations.compile
-}
-
-/*
- * Automatically triggers subprojects' eclipse task when
- * eclipse task is run on root project
- */
-tasks.eclipse.dependsOn{
-	subprojects { Project subproj ->
-		subproj.tasks.eclipse
-	}
 }
 
 /*

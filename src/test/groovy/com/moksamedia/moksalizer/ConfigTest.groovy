@@ -34,31 +34,5 @@ class ConfigTest {
 	public void testInit() {
 		assert controller.daoMongo.ds.getDB().getName() == 'moksalizer_test'
 	}
-	
-	@Test
-	public void testMetaClass() {
-		
-		MongoMorphiaDAO daoMongo = controller.daoMongo
-		Morphia morphia = daoMongo.morphia
-		
-		def props = Role.metaClass.properties
-		
-		props.each { 
-			log.info it.name
-		}
-		
-		User admin = User.getOne(username:'cantgetnosleep')
-		assert admin != null
-		
-		Role role = new Role()
-		role.someprop = [admin]
-		
-		def dbObj = morphia.toDBObject(role.someprop as List<User>)
-		
-		log.info dbObj.toMap().toMapString()
-	
-		
-		role.save()
-	}
 
 }
