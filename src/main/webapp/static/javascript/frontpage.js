@@ -22,7 +22,7 @@ function loadMorePosts() {
 	
 	$("div.loading-msg").appendTo("div.post-list").delay(500).fadeIn('slow');
 		
-	$.get('/loadpostsajax', {'batchnum':batchNum, 'batchsize':batchSize, 'ajaxloadtype':ajaxloadtype}, function(data) {
+	$.get('/ajax/posts', {'batchnum':batchNum, 'batchsize':batchSize}, function(data) {
 		
 		html = $(data).html(); // this extracts the contents of the top-level div.post-list for us
 		

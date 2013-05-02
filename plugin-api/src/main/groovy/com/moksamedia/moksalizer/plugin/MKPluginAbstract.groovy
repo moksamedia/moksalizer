@@ -7,4 +7,6 @@ abstract class MKPluginAbstract {
 	
 	
 	public abstract String doPlugin();
+	
+	public abstract initialize(def params = [:]);
 }

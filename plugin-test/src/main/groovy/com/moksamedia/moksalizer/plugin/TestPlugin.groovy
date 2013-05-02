@@ -14,4 +14,18 @@ class TestPlugin extends MKPluginAbstract {
 	public String doPlugin() {
 		
 	}
+
+	@Override
+	public Object initialize(Object params) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object initialize() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
 }
